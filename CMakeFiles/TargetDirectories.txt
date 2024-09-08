@@ -1,3 +1,0 @@
-C:/Users/abarak/proj/CMakeFiles/MyCMakeProject.dir
-C:/Users/abarak/proj/CMakeFiles/edit_cache.dir
-C:/Users/abarak/proj/CMakeFiles/rebuild_cache.dir

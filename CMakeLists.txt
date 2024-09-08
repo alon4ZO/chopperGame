@@ -4,12 +4,14 @@ project(MyCMakeProject)
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)  # Ensure debug info is generated
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")# // adjust as necessary
+message(STATUS "Using directory: $ENV{SFML_DIR}")
+set(SFML_DIR "$ENV{SFML_DIR}\\lib\\cmake\\SFML" CACHE STRING "Path to SFML installation")
 
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+find_package(SFML REQUIRED COMPONENTS graphics window system)
 
 # Include directories
-include_directories(include)
+include_directories(MyCMakeProject include)
+include_directories(MyCMakeProject $ENV{SFML_DIR}/include)
 
 # Source files
 set(SOURCES
@@ -17,5 +19,14 @@ set(SOURCES
     src/main.cpp
 )
 
+link_directories($ENV{SFML_DIR}/lib)
+
 # Create the executable
 add_executable(MyCMakeProject ${SOURCES})
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+set(SFML_LIBRARIES sfml-graphics-d sfml-window-d sfml-system-d)
+else()
+set(SFML_LIBRARIES sfml-graphics sfml-window sfml-system)
+endif()
+target_link_libraries(MyCMakeProject ${SFML_LIBRARIES})
