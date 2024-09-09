@@ -8,13 +8,14 @@
 
 int main()
 {
-    std::cout << "Starting chopper game" << std::endl;
+
+    std::cout << "[Main] Starting chopper game" << std::endl;
 
     Screen *screen = Screen::getScreen();
 
     GameShapes gameShapes(screen->getgameScreenWidth(), screen->getgameScreenHeight());
     // GameShapes->addBasicShapes();
-    screen->play();
+    screen->play(gameShapes);
 
-    // return 0;
+    return 0;
 }

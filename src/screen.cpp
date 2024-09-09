@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <screen.hpp>
+#include <gameShapes.hpp>
 
 using namespace std;
 
@@ -34,16 +35,12 @@ Screen *Screen::getScreen()
     return instance.get();
 }
 
-void Screen::play()
+void Screen::play(const GameShapes &shapes)
 {
-    sf::RectangleShape rectangle;
-    rectangle.setSize(sf::Vector2f(50, 50));
-    rectangle.setOutlineColor(sf::Color::Red);
-    rectangle.setFillColor(sf::Color::Blue);
-    rectangle.setOutlineThickness(30);
-    rectangle.setPosition(25, 25);
 
-    window.draw(rectangle);
+    // window.draw(rectangle);
+    auto &walls = shapes.getWalls();
+    auto &obsticles = shapes.getobsticals();
 
     while (window.isOpen())
     {
@@ -55,7 +52,14 @@ void Screen::play()
         }
 
         window.clear(sf::Color::Black);
-        window.draw(rectangle);
+        for (auto &i : walls)
+        {
+            window.draw(*i);
+        }
+        for (auto &i : obsticles)
+        {
+            window.draw(*i);
+        }
         window.display();
     }
 }

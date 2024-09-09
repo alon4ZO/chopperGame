@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <definitions.h>
 #include <memory>
+#include <gameShapes.hpp>
 
 using namespace std;
 
@@ -19,7 +20,7 @@ public:
     Screen(Screen &) = delete;
     void operator=(Screen &) = delete;
     static Screen *getScreen();
-    void play();
+    void play(const GameShapes &gameShapes);
 
     uint32_t getgameScreenWidth() { return gameScreenWidth; }
     uint32_t getgameScreenHeight() { return gameScreenHeight; }
