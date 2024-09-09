@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug My C++ Program",
+            "type": "cppdbg", // Use "cppdbg" for C++
+            "request": "launch",
+            "program": "${workspaceFolder}/build/MyCMakeProject.exe", // Path to the executable
+            "args": [], // Any command-line arguments
+            "stopAtEntry": false, // Set to true to stop at the entry point
+            "cwd": "${workspaceFolder}", // Current working directory
+            "environment": [], // Environment variables, if needed
+            "externalConsole": false, // Set to true to use an external console
+            "MIMode": "gdb", // Use "gdb" for GDB debugger (or "lldb" for LLDB)
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        }
+    ]
+}

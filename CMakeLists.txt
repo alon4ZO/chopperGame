@@ -15,8 +15,9 @@ include_directories(MyCMakeProject $ENV{SFML_DIR}/include)
 
 # Source files
 set(SOURCES
-    src/mylib.cpp
     src/main.cpp
+    src/screen.cpp
+    src/gameShapes.cpp
 )
 
 link_directories($ENV{SFML_DIR}/lib)
