@@ -35,12 +35,16 @@ Screen *Screen::getScreen()
     return instance.get();
 }
 
-void Screen::play(const GameShapes &shapes)
+void Screen::play(GameShapes &shapes)
 {
 
     // window.draw(rectangle);
     auto &walls = shapes.getWalls();
     auto &obsticles = shapes.getobsticals();
+
+    sf::Clock clock;
+
+    const float speed = 200.0f; // pixels per second
 
     while (window.isOpen())
     {
@@ -50,13 +54,26 @@ void Screen::play(const GameShapes &shapes)
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-
         window.clear(sf::Color::Black);
-        for (auto &i : walls)
+
+        float deltaTime = clock.restart().asSeconds();
+        shapes.updateObsicles(deltaTime);
+
+        for (auto &i : obsticles)
         {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            {
+                i->move(speed * deltaTime, 0.0f);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            {
+                i->move(0.0f, speed * deltaTime);
+            }
             window.draw(*i);
         }
-        for (auto &i : obsticles)
+
+        for (auto &i : walls)
         {
             window.draw(*i);
         }
