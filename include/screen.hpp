@@ -20,8 +20,5 @@ public:
     Screen(Screen &) = delete;
     void operator=(Screen &) = delete;
     static Screen *getScreen();
-    void play(GameShapes &gameShapes);
-
-    uint32_t getgameScreenWidth() { return gameScreenWidth; }
-    uint32_t getgameScreenHeight() { return gameScreenHeight; }
+    void Render();
 };
