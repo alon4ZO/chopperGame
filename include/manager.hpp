@@ -4,25 +4,16 @@
 #include <memory>
 #include <list>
 
-using namespace std;
-
-class GameShapes
+class Manager // ALONB Add static variable to make sure 1 initialization?
 {
 private:
-    uint32_t boardWidth;
-    uint32_t boardHeight;
-    uint32_t wallThickness;
-    list<unique_ptr<sf::Shape>> walls;
-    list<unique_ptr<sf::Shape>> chopper;
-    list<unique_ptr<sf::Shape>> obsticals;
-
-    void createObsticle(uint32_t xPos, uint32_t boardHeight, uint32_t wallThickness, uint32_t spacing);
-    unique_ptr<sf::Shape> shapeFactory();
+    uint32_t score;
+    uint32_t speed;                 // how many pixels per second
+    uint32_t maxObsticlesPerSecond; // how many obsiticles will be generated per second
 
 public:
-    GameShapes(uint32_t x, uint32_t y);
-    const list<unique_ptr<sf::Shape>> &getWalls() const { return walls; }
-    const list<unique_ptr<sf::Shape>> &getchopper() const { return chopper; }
-    const list<unique_ptr<sf::Shape>> &getobsticals() const { return obsticals; }
-    void updateObsicles(float dt);
+    Manager(uint32_t score = MANAGER_INITIAL_SCORE,
+            uint32_t speed = MANAGER_INITIAL_SPEED,
+            uint32_t maxObsticlesPerSecond = MANAGER_INITIAL_SHAPES_PER_SECOND) {};
+    void Start();
 };

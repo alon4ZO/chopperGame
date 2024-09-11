@@ -5,19 +5,11 @@
 #include <iostream>
 #include <screen.hpp>
 #include <gameShapes.hpp>
+#include <manager.hpp>
 #include <thread>
 #include <chrono>
 
 using namespace std;
-
-void threadPrintFunction()
-{
-    while (1)
-    {
-        cout << "Test" << endl;
-        this_thread::sleep_for(chrono::seconds(3));
-    }
-}
 
 int main()
 {
@@ -25,20 +17,19 @@ int main()
 
     // Assuming Screen::getScreen() returns a pointer to a valid Screen object
     Screen *screen = Screen::getScreen();
-    if (!screen)
-    {
-        cerr << "[Error] Failed to initialize screen." << endl;
-        return -1;
-    }
+    Manager manager;
 
-    GameShapes gameShapes(screen->getgameScreenWidth(), screen->getgameScreenHeight());
+    // GameShapes gameShapes(screen->getgameScreenWidth(), screen->getgameScreenHeight());
 
     // Directly use the threadPrint function
-    thread threadPrint(threadPrintFunction);
+    thread threadManager([&manager]()
+                         { manager.Start(); });
 
     // Join threads to ensure they complete before exiting
-    screen->play(gameShapes);
-    threadPrint.join();
+    screen->Render();
+    threadManager.join();
 
     return 0;
 }
+
+// ALONB screen probably does not need to be singleton, and shapes does need to be so it can be accessed from different modules. screen and manager can have a 1 time init protection.
