@@ -20,9 +20,12 @@ private:
     list<unique_ptr<sf::Shape>> chopper;
     list<unique_ptr<sf::Shape>> obsticals;
     list<unique_ptr<sf::Shape>> countDown;
+    list<unique_ptr<sf::Shape>> blackout;
+    pair<bool, bool> isCollisions;
 
-    void createObsticle(uint32_t xPos, uint32_t boardHeight, uint32_t wallThickness, uint32_t spacing);
-    unique_ptr<sf::Shape> shapeFactory();
+    void
+    createObsticle(uint32_t xPos, uint32_t boardHeight, uint32_t wallThickness, uint32_t spacing);
+    // unique_ptr<sf::Shape> shapeFactory();
 
     float clamp(float value, float minVal, float maxVal) // Just in case CPP is older than 17 used explicit function.
     {
@@ -53,6 +56,7 @@ public:
     const list<unique_ptr<sf::Shape>> &getchopper() const { return chopper; }
     const list<unique_ptr<sf::Shape>> &getobsticals() const { return obsticals; }
     const list<unique_ptr<sf::Shape>> &getCountDown() const { return countDown; }
+    const list<unique_ptr<sf::Shape>> &emptyBlack() const { return blackout; } // ALONB - instead of putting this on top, I should really just not preset anything.
     void updateObsicles(float dt);
 
     void createNewObstible();
@@ -61,46 +65,23 @@ public:
     {
         for (auto &i : chopper)
         {
-            cout << direction.first << " " << direction.second << endl;
-
             i->move(direction.first, 0.0f);
             i->move(0.0f, direction.second);
 
             auto bounds = i->getGlobalBounds();
             sf::Vector2f position;
-            // position.x = clamp(bounds.left + direction.first, 0, gameScreenWidth - bounds.width) + 100;
-            // position.y = clamp(bounds.top + direction.second, wallThickness, gameScreenWidth - bounds.height);
 
             position.x = clamp(bounds.left, 0, gameScreenWidth - bounds.width);
             position.y = clamp(bounds.top, wallThickness, gameScreenHeight - bounds.height);
-            // position.y = clamp(bounds.top + direction.second, wallThickness, gameScreenWidth - bounds.height);
 
             i->setPosition(position);
-
-            // if (position.x < 0)
-            // {
-            //     position.x = 0;
-            // }
-            // else if (position.x > gameScreenWidth - i->getSize().x)
-            // {
-            //     position.x = gameScreenWidth - i->getSize().x;
-            // }
-
-            // if (position.y < wallThickness)
-            // {
-            //     position.y = wallThickness;
-            // }
-            // else if (position.y > gameScreenHeight - i->getSize().y)
-            // {
-            //     position.y = gameScreenHeight - i->getSize().y;
-            // }
-
-            // i->setPosition(position);
-
-            // sf::Vector2f newPosition
-            // if position.x <
         }
     }
+
+    void checkCollisions();
+    bool isCollionWithObsticle() { return isCollisions.first; }
+    void flickerScreen();
+    // first is obstible and second is life
 };
 
 // ALONB make see with waves on top

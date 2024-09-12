@@ -13,13 +13,15 @@ typedef enum ManagerSm
 {
     MANAGER_SM_COUNT_DOWN = 0,
     MANAGER_SM_GAME,
+    MANAGER_SM_COLLISION,
     MANAGER_SM_SCORE,
 } MANAGER_SM_E;
 
 void Manager::Start()
 {
     MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
-    uint8_t countDown = 3;
+    uint8_t countDown = 3; // STATIC ASERT not bigger than 3
+    uint8_t flickers = 4;  // STATIC ASSERT even.
 
     GameShapes *GameShapes = GameShapes::getGameShapes();
 
@@ -50,12 +52,39 @@ void Manager::Start()
 
         case MANAGER_SM_GAME:
         {
-            std::cout << "[Manager] - New shape" << std::endl;
+            // std::cout << "[Manager] - New shape" << std::endl;
+            if (GameShapes->isCollionWithObsticle())
+            {
+                state = MANAGER_SM_COLLISION;
+                cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
+            }
+            else
+            {
+                GameShapes->createNewObstible();
+                GameShapes->cleanUpOldObsticles();
 
-            GameShapes->createNewObstible();
-            GameShapes->cleanUpOldObsticles();
+                cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
 
-            this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
+                this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
+            }
+        }
+        break;
+
+        case MANAGER_SM_COLLISION:
+        {
+
+            GameShapes->flickerScreen();
+
+            // std::cout << "[Manager] - New shape" << std::endl;
+            this_thread::sleep_for(chrono::milliseconds(150));
+            flickers--;
+            if (flickers <= 0)
+            {
+                state = MANAGER_SM_GAME;
+                GameShapes->clearAll();
+                GameShapes->setActiveGame();
+                flickers = 4;
+            }
         }
         break;
         }

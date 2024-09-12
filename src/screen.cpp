@@ -51,6 +51,7 @@ void Screen::Render()
     auto &obsticles = gameShapes->getobsticals();
     auto &countDown = gameShapes->getCountDown();
     auto &chopper = gameShapes->getchopper();
+    auto &blackBackground = gameShapes->emptyBlack();
 
     sf::Clock clock;
 
@@ -114,12 +115,28 @@ void Screen::Render()
         window.clear(sf::Color::Black);
 
         float deltaTime = clock.restart().asSeconds();
-        gameShapes->updateObsicles(deltaTime);
 
         window.draw(sprite2);
         sprite.setColor(sf::Color(255, 255, 255, 120)); // Set to white color with transparency
 
         window.draw(sprite);
+
+        // check collision
+
+        if (!gameShapes->isCollionWithObsticle())
+        {
+            gameShapes->checkCollisions();
+            gameShapes->updateObsicles(deltaTime);
+
+            // check press
+            steps = {0, 0};
+            steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -speed * deltaTime : 0;
+            steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? speed * deltaTime : 0;
+            steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -speed * deltaTime : 0; // ALONB - there should be X speed and Y speed with proportions to the screen.
+            steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? speed * deltaTime : 0;
+
+            gameShapes->moveChopper(steps);
+        }
 
         for (auto &i : obsticles)
         {
@@ -141,13 +158,10 @@ void Screen::Render()
             window.draw(*i);
         }
 
-        steps = {0, 0};
-        steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -speed * deltaTime : 0;
-        steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? speed * deltaTime : 0;
-        steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -speed * deltaTime : 0; // ALONB - there should be X speed and Y speed with proportions to the screen.
-        steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? speed * deltaTime : 0;
-
-        gameShapes->moveChopper(steps);
+        for (auto &i : blackBackground)
+        {
+            window.draw(*i);
+        }
 
         // Desired pixel size
 

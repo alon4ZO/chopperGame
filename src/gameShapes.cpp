@@ -1,3 +1,4 @@
+// ALONB - enable some warnings and errors in compiler
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <screen.hpp>
@@ -38,6 +39,15 @@ public:
         return border;
     }
 
+    static unique_ptr<sf::Shape> createEmptyBlack(uint32_t xDim, uint32_t yDim, uint32_t wallThickness)
+    {
+        unique_ptr<sf::RectangleShape> shape = make_unique<sf::RectangleShape>();
+        shape->setSize(sf::Vector2f(xDim, yDim));
+        shape->setFillColor(sf::Color::Black);
+        shape->setPosition(0, wallThickness);
+        return shape;
+    }
+
     static unique_ptr<sf::Shape> createObsticle(uint32_t xPos,
                                                 uint32_t boardHeight,
                                                 uint32_t wallThickness,
@@ -46,12 +56,21 @@ public:
         uint32_t xDim = getRandomNumber(spacing / 4, spacing * 12 / 10);
         uint32_t yDim = getRandomNumber((boardHeight - wallThickness) / 13, (boardHeight - wallThickness) * 1.2 / 13);
         uint32_t yPos = getRandomNumber(wallThickness, boardHeight - yDim);
-        ;
+
+        static sf::Texture texture;
+        if (!texture.loadFromFile("C:\\ws\\chopperGame\\pic\\grassTexture.png"))
+        {
+            cout << "Fail" << endl; // Failed to load texture
+        }
+
+        texture.setRepeated(true);
 
         unique_ptr<sf::RectangleShape> obsticle;
         obsticle = make_unique<sf::RectangleShape>();
         obsticle->setSize(sf::Vector2f(xDim, yDim));
         obsticle->setFillColor(sf::Color(70, 107, 41));
+        obsticle->setTexture(&texture);
+        // obsticle->setTextureRect(sf::IntRect(0, 0, 300, 300)); // Size of the texture to repeat
         obsticle->setPosition(xPos, yPos);
         return obsticle;
     }
@@ -219,6 +238,7 @@ void GameShapes::setActiveGame() // This should be all the time... ALONB
 
     chopper.push_back(move(chopperBody));
     walls.push_back(move(ceiling));
+    isCollisions = {false, false};
 };
 
 void GameShapes::setCountDown(uint8_t num)
@@ -244,7 +264,10 @@ void GameShapes::setCountDown(uint8_t num)
 void GameShapes::updateObsicles(float dt)
 {
 
-    const float speed = 600.0f; // pixels per second
+    // const float speed = 600.0f; // this was not bad
+    // const int spacing = 100;
+
+    const float speed = 200.0f; // pixels per second
     const int spacing = 100;
 
     // std::lock_guard<std::mutex> lock(_mutex);
@@ -307,14 +330,47 @@ void GameShapes::createNewObstible()
 
 void GameShapes::cleanUpOldObsticles()
 {
-    auto &oldestObsticle = obsticals.front();
-    sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
+    std::lock_guard<std::mutex> lock(_mutex);
 
-    if (floatRect.left + floatRect.width < 0)
+    while (obsticals.size() > 0)
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+
+        auto &oldestObsticle = obsticals.front();
+        sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
+
+        if (floatRect.left + floatRect.width > 0)
+        {
+            break;
+        }
+
         obsticals.pop_front();
     }
 }
 
-// ALONB - enable some warnings and errors in compiler
+void GameShapes::checkCollisions()
+{
+
+    for (auto &i : obsticals)
+    {
+        if (chopper.front()->getGlobalBounds().intersects(i->getGlobalBounds()))
+        {
+            isCollisions.first = true;
+            return; // ALONB - add extra life.
+        }
+    }
+}
+
+void GameShapes::flickerScreen()
+{
+    if (blackout.size() == 1)
+    {
+        blackout.pop_back();
+    }
+    else
+    {
+
+        unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(gameScreenWidth, gameScreenHeight, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
+        std::lock_guard<std::mutex> lock(_mutex);
+        blackout.push_back(move(shape));
+    }
+}
