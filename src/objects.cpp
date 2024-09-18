@@ -9,27 +9,6 @@
 
 using namespace std;
 
-list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
-{
-    list<unique_ptr<sf::RectangleShape>> shapes;
-
-    uint32_t xDim, yDim, xPos, yPos;
-
-    xDim = boardWidth / 30;
-    yDim = boardHeight / NUMBER_HEIGHT_RATIO;
-    xPos = boardWidth / 2;
-    yPos = (boardHeight - yDim) / 2;
-
-    unique_ptr<sf::RectangleShape> one_1;
-    one_1 = make_unique<sf::RectangleShape>();
-    one_1->setSize(sf::Vector2f(xDim, yDim));
-    one_1->setFillColor(sf::Color::Yellow);
-    one_1->setPosition(xPos, yPos);
-
-    shapes.push_back(move(one_1));
-    return shapes;
-}
-
 string shapeFactory::getPathForPng(string fileName, uint8_t randomOptions) // Put this with the random num generator in utils tab.
 {
 
@@ -70,6 +49,43 @@ string shapeFactory::getPathForPng(string fileName, uint8_t randomOptions) // Pu
     return res;
 }
 
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", 2), scale, {0, verticleSpeed})
+{
+    setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
+                dimensions::screenDimentions.y);
+};
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark"), scale, {horizontalSpeed, 0})
+{
+    setLocation(dimensions::activeGameDimentions.x,
+                dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
+};
+Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble"), scale, {0, verticleSpeed}) {};
+Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+{
+    setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
+                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
+};
+
+list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
+{
+    list<unique_ptr<sf::RectangleShape>> shapes;
+
+    uint32_t xDim, yDim, xPos, yPos;
+
+    xDim = boardWidth / 30;
+    yDim = boardHeight / NUMBER_HEIGHT_RATIO;
+    xPos = boardWidth / 2;
+    yPos = (boardHeight - yDim) / 2;
+
+    unique_ptr<sf::RectangleShape> one_1;
+    one_1 = make_unique<sf::RectangleShape>();
+    one_1->setSize(sf::Vector2f(xDim, yDim));
+    one_1->setFillColor(sf::Color::Yellow);
+    one_1->setPosition(xPos, yPos);
+
+    shapes.push_back(move(one_1));
+    return shapes;
+}
 list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum2(uint32_t boardWidth, uint32_t boardHeight)
 {
     list<unique_ptr<sf::RectangleShape>> shapes;
@@ -173,21 +189,4 @@ list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum3(uint32_t boardWidt
     shapes.push_back(move(three_3));
     shapes.push_back(move(three_4));
     return shapes;
-};
-
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", 2), scale, {0, verticleSpeed})
-{
-    setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
-                dimensions::screenDimentions.y);
-};
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark"), scale, {horizontalSpeed, 0})
-{
-    setLocation(dimensions::activeGameDimentions.x,
-                dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
-};
-Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble"), scale, {0, verticleSpeed}) {};
-Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
-{
-    setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
-                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };

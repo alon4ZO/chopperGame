@@ -22,7 +22,8 @@ void Manager::Start()
     MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
     int8_t countDown = 3; // STATIC ASERT not bigger than 3
     uint8_t flickers = 4; // STATIC ASSERT even.
-    int8_t meduzCountDown;
+    int8_t meduzCountDown = getRandomNumber(5, 7);
+    uint32_t points;
 
     GameShapes *GameShapes = GameShapes::getGameShapes();
 
@@ -45,6 +46,7 @@ void Manager::Start()
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setActiveGame();
+                points = 0;
                 continue;
             }
             this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
@@ -66,13 +68,16 @@ void Manager::Start()
                 if (meduzCountDown-- <= 0)
                 {
                     GameShapes->createNewMeduz();
-                    meduzCountDown = getRandomNumber(5, 7);
+                    meduzCountDown = getRandomNumber(1, 2);
                 }
 
                 GameShapes->cleanUpOldObjects();
 
                 // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
+
+                points += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                cout << points;
             }
         }
         break;

@@ -64,7 +64,7 @@ void GameShapes::setActiveGame()
     std::lock_guard<std::mutex> lock(_mutex);
     drawablesList.clear();
 
-    player = make_unique<Player>(0.08);
+    player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO);
 };
 
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
@@ -128,16 +128,6 @@ void GameShapes::setCountDown(uint8_t num)
 void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
 {
 
-    // const float speed = 600.0f; // this was not bad
-    // const int spacing = 100;
-
-    // const float speed = 200.0f; // pixels per second
-    // const int spacing = 100;
-
-    // std::lock_guard<std::mutex> lock(_mutex);
-
-    // Move all obsitcles to the left according to time passed and speed.
-
     for (auto &i : sharks)
     {
         i->advance(dt);
@@ -147,49 +137,10 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
         i->advance(dt);
     }
 
-    // for (auto &i : bubbles)
-    // {
-    //     i->advance(-speed * dt, 0.0f);
-    // }
-
-    // check if player speed needs to change.
-
-    // cout << static_cast<int32_t>(playerSteps.first) << " " << static_cast<int32_t>(playerSteps.second) << endl;
-    // cout << "dt" << dt << endl;
     if (player)
     {
         player->advance(dt, playerSteps.first, playerSteps.second);
     }
-    // create obsticle if screen is empty.
-    // if (obsticals.size() == 0)
-    // {
-    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
-    //     obsticals.push_back(move(obsticle));
-    //     return;
-    // }
-
-    // // if last obsticle is advanced enough, introduce a new obsitcle.
-    // auto &newestObsticle = obsticals.back();
-    // sf::Vector2f positionOfNewestObsticle = newestObsticle->getPosition();
-
-    // if (positionOfNewestObsticle.x < screenDimentions.x - spacing)
-    // {
-    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
-    //     obsticals.push_back(move(obsticle));
-    //     return;
-    // }
-
-    // remove old obsticle if necessary
-    // auto &oldestObsticle = obsticals.front();
-    // sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
-
-    // if (floatRect.left + floatRect.width < 0)
-    // {
-    //     obsticals.pop_front();
-    // }
-
-    // cout << obsticals.size() << endl;
-    // check if to remove first object
 };
 
 void GameShapes::createNewShark()
@@ -198,7 +149,7 @@ void GameShapes::createNewShark()
     do
     {
         collisionDuringCreation = false;
-        unique_ptr<Shark> newShark = make_unique<Shark>(0.1, -0.25);
+        unique_ptr<Shark> newShark = make_unique<Shark>(0.08, -0.25);
 
         // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
 

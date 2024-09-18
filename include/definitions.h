@@ -6,6 +6,7 @@
 
 // graphics:
 #define GAME_BOARD_PLAYER_X_OFFSET_RATIO (0.1)
+#define GAME_BOARD_PLAYER_X_SIZE_RATIO (0.05)
 #define GAME_BOARD_RATIO (0.8)
 // #define GAME_BOARD_WALL_WIDTH_RATIO (0.2) // Factor
 #define GAME_BOARD_WALL_WIDTH_RATIO (0.15) // Factor
