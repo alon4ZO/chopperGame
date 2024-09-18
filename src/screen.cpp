@@ -88,26 +88,19 @@ void Screen::Render()
 
         // check collision
 
-        // if (!gameShapes->isCollionWithObsticle())
-        // {
-        //     gameShapes->checkCollisions();
-        //     gameShapes->updateMovables(deltaTime);
+        if (!gameShapes->isCollionWithObsticle())
+        {
+            gameShapes->checkCollisions();
 
-        //     // check press
-        //     steps = {0, 0};
-        //     steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -speed * deltaTime : 0;
-        //     steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? speed * deltaTime : 0;
-        //     steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -speed * deltaTime : 0; // ALONB - there should be X speed and Y speed with proportions to the screen.
-        //     steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? speed * deltaTime : 0;
+            playerSteps = {0, 0};
+            playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -1 : 0;
+            playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 1 : 0;
+            playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -1 : 0;
+            playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? 1 : 0;
+            // ALONB - there should be X speed and Y speed with proportions to the screen.
 
-        playerSteps = {0, 0};
-        playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -1 : 0;
-        playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 1 : 0;
-        playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -1 : 0;
-        playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? 1 : 0;
-        // ALONB - there should be X speed and Y speed with proportions to the screen.
-
-        gameShapes->updateMovables(deltaTime, playerSteps);
+            gameShapes->updateMovables(deltaTime, playerSteps);
+        }
 
         const vector<sf::Drawable *> &drawables = gameShapes->updateAndGetItemsToDraw(); // This must be refreshed.
         // }

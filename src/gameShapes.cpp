@@ -278,6 +278,14 @@ public:
     };
 };
 
+// GameShapes::GameShapes()
+// {
+//     moveablesList.push_back(static_player);
+//     moveablesList.push_back(sharks);
+//     moveablesList.push_back(meduzes);
+//     moveablesList.push_back(bubbles);
+// }
+
 GameShapes *GameShapes::getGameShapes()
 {
     if (instance == nullptr)
@@ -292,6 +300,8 @@ void GameShapes::clearAll()
 
     //
     // for ()
+    std::lock_guard<std::mutex> lock(_mutex);
+
     sharks.clear();
     meduzes.clear();
     numCountdown.clear();
@@ -304,12 +314,13 @@ void GameShapes::clearAll()
 
 void GameShapes::setActiveGame()
 {
+    clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
 
     isCollisions = {false, false};
 
     std::lock_guard<std::mutex> lock(_mutex);
-    itemsToDraw.clear();
+    drawablesList.clear();
 
     player = make_unique<Player>(0.08);
 };
@@ -318,32 +329,38 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
     // cout << "[screen] - update" << endl;
 
-    itemsToDraw.clear();
+    drawablesList.clear();
+
+    if (blackout)
+    {
+        return drawablesList;
+    }
+
     if (player)
     {
         // cout << "T" << endl;
-        itemsToDraw.push_back(player->getDrawable());
+        drawablesList.push_back(player->getDrawable());
     }
 
     for (const auto &i : numCountdown)
     {
         // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        itemsToDraw.push_back(i.get()); // ALONB - use a shared pointer instead?
+        drawablesList.push_back(i.get()); // ALONB - use a shared pointer instead?
     }
 
     for (const auto &i : sharks)
     {
         // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        itemsToDraw.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
     }
 
     for (const auto &i : meduzes)
     {
         // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        itemsToDraw.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
     }
 
-    return itemsToDraw;
+    return drawablesList;
 }
 
 void GameShapes::setCountDown(uint8_t num)
@@ -387,11 +404,6 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
     {
         i->advance(dt);
     }
-
-    // for (auto &i : meduzes)
-    // {
-    //     i->advance(-speed * dt, 0.0f);
-    // }
 
     // for (auto &i : bubbles)
     // {
@@ -495,31 +507,35 @@ void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
         {
             std::lock_guard<std::mutex> lock(_mutex);
             meduzes.push_back(move(newMeduz));
-            cout << "SOL" << endl;
+            // cout << "SOL" << endl;
         }
 
     } while (collisionDuringCreation);
 }
 
-void GameShapes::cleanUpOldObsticles()
+void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and there should be an easily accessible list of movables.
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
     // use get Bounds insted of manual calc can use the check collision with the screen
 
-    // while (obsticals.size() > 0)
-    // {
+    sf::FloatRect screenRect{0 - static_cast<float>(100), dimensions::activeGameYOffset - static_cast<float>(100), dimensions::activeGameDimentions.x + static_cast<float>(200), dimensions::activeGameDimentions.y + static_cast<float>(200)};
 
-    //     auto &oldestObsticle = obsticals.front();
-    //     sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
+    cout << sharks.size() << endl;
+    // cout << "M" << meduzes.size() << endl;
+    while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
+    {
+        sharks.pop_front();
+        // cout << "POP" << endl;
+    }
 
-    //     if (floatRect.left + floatRect.width > 0)
-    //     {
-    //         break;
-    //     }
+    while ((meduzes.size() > 0) && (!meduzes.front().get()->checkColision(screenRect)))
+    {
+        meduzes.pop_front();
+        // cout << "POPm" << endl;
+    }
 
-    //     obsticals.pop_front();
-    // }
+    // ALONB - assert that the sizes do not explode?
 }
 
 void GameShapes::checkCollisions()
@@ -530,6 +546,7 @@ void GameShapes::checkCollisions()
         if (i->checkColision(player->getBounds()))
         {
             isCollisions.first = true;
+            cout << "COLS" << endl;
             break;
         }
     }
@@ -538,6 +555,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
+            cout << "COLM" << endl;
             isCollisions.first = true;
             break;
         }

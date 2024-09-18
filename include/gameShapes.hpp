@@ -97,6 +97,12 @@ public:
     Meduz(float scale, float verticleSpeed);
     void advance(float dt, int8_t x = 1, int8_t y = 1)
     {
+        float dy = dt * speedPixPerSecond.y * y;
+
+        if ((this->getBounds().top + dy) < dimensions::activeGameYOffset)
+        {
+            speedPixPerSecond.y *= -1;
+        }
 
         sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
     }
@@ -169,15 +175,10 @@ private:
     static unique_ptr<GameShapes> instance;
 
     uint32_t blackout;
-    // list<unique_ptr<sf::Shape>> walls;
-    // list<unique_ptr<sf::Shape>> chopper;
-    // list<unique_ptr<sf::Shape>> obsticals;
-    // list<unique_ptr<sf::Shape>> countDown;
-    // list<unique_ptr<sf::Shape>> blackout;
 
     unique_ptr<Player> player;
-    list<unique_ptr<Shark>> sharks;  // The sharks are in the front, meduzes are in the back
-    list<unique_ptr<Meduz>> meduzes; // The sharks are in the front, meduzes are in the back
+    list<unique_ptr<Shark>> sharks;
+    list<unique_ptr<Meduz>> meduzes;
     list<unique_ptr<Bubble>> bubbles;
     list<unique_ptr<sf::RectangleShape>> numCountdown;
 
@@ -185,7 +186,7 @@ private:
 
     // All Items to draw
     // bool is - isLlist
-    vector<sf::Drawable *> itemsToDraw;
+    vector<sf::Drawable *> drawablesList;
 
     pair<bool, bool> isCollisions;
 
@@ -201,7 +202,7 @@ private:
 
 public:
     // GameShapes(uint32_t x, uint32_t y);
-    GameShapes() = default;
+    GameShapes() { blackout = false; }
     GameShapes operator=(GameShapes &) = delete;
     GameShapes(GameShapes &) = delete;
     static GameShapes *getGameShapes();
@@ -238,7 +239,7 @@ public:
 
     void createNewShark();
     void createNewMeduz();
-    void cleanUpOldObsticles();
+    void cleanUpOldObjects();
     void moveChopper(pair<float, float> direction) // ALONB - move this from here.
     {
         // for (auto &i : chopper)

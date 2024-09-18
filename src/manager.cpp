@@ -55,31 +55,31 @@ void Manager::Start()
         {
 
             // std::cout << "[Manager] - New shape" << std::endl;
-            // if (GameShapes->isCollionWithObsticle())
-            // {
-            //     state = MANAGER_SM_COLLISION;
-            //     // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
-            // }
-            // else
-            // {
-            GameShapes->createNewShark();
-            if (meduzCountDown-- <= 0)
+            if (GameShapes->isCollionWithObsticle())
             {
-                GameShapes->createNewMeduz();
-                meduzCountDown = getRandomNumber(5, 7);
+                state = MANAGER_SM_COLLISION;
+                // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
             }
+            else
+            {
+                GameShapes->createNewShark();
+                if (meduzCountDown-- <= 0)
+                {
+                    GameShapes->createNewMeduz();
+                    meduzCountDown = getRandomNumber(5, 7);
+                }
 
-            // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
+                GameShapes->cleanUpOldObjects();
 
-            // }
-
-            this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
+                // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
+                this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
+            }
         }
         break;
 
         case MANAGER_SM_COLLISION:
         {
-
+            cout << "COLLLLLLLLL" << endl;
             GameShapes->flickerScreen();
 
             // std::cout << "[Manager] - New shape" << std::endl;
