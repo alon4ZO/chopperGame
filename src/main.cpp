@@ -15,18 +15,17 @@ int main()
 {
     std::cout << "[Main] Starting chopper game" << std::endl;
 
-    // Assuming Screen::getScreen() returns a pointer to a valid Screen object
-    Screen *screen = Screen::getScreen();
+    Screen screen;
     Manager manager;
 
-    // GameShapes gameShapes(screen->getgameScreenWidth(), screen->getgameScreenHeight());
+    // GameShapes gameShapes(screen->getscreenDimentions.x(), screen->getscreenDimentions.y());
 
     // Directly use the threadPrint function
     thread threadManager([&manager]()
                          { manager.Start(); });
 
     // Join threads to ensure they complete before exiting
-    screen->Render();
+    screen.Render();
     threadManager.join();
 
     return 0;

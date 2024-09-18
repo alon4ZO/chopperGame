@@ -3,104 +3,74 @@
 #include <screen.hpp>
 #include <gameShapes.hpp>
 #include <thread>
+#include <vector>
 
 using namespace std;
 
 /* singleton class to hold the main Screen object */
-unique_ptr<Screen> Screen::instance = nullptr;
 
-Screen::Screen(uint8_t xRatioPercentage, uint8_t yRatioPercentage)
+Screen::Screen(float ratio)
 {
-    std::cout << "[Screen] - Setting up screen" << std::endl;
+    std::cout << "[Screen] - Setting up screen" << ratio << std::endl;
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
-    gameScreenWidth = static_cast<uint32_t>(desktopMode.width * (static_cast<float>(xRatioPercentage) / 100));
-    gameScreenHeight = static_cast<uint32_t>(desktopMode.height * (static_cast<float>(yRatioPercentage) / 100));
+    uint32_t x;
+    uint32_t y; // ALONB - optimize
+
+    x = static_cast<uint32_t>(desktopMode.width * ratio);
+    // y = static_cast<uint32_t>(desktopMode.height * ratio);
+    y = x * 9 / 16 * ratio;
 
     // Print the Screen dimensions
     std::cout << "[Screen] - deskTop Width: " << desktopMode.width << std::endl;
     std::cout << "[Screen] - deskTop Height: " << desktopMode.height << std::endl;
-    std::cout << "[Screen] - game Screen Width: " << gameScreenWidth << std::endl;
-    std::cout << "[Screen] - game Screen Width: " << gameScreenHeight << std::endl;
+    std::cout << "[Screen] - game Screen Width: " << x << std::endl;
+    std::cout << "[Screen] - game Screen Height: " << y << std::endl;
 
-    window.create(sf::VideoMode(gameScreenWidth, gameScreenHeight), "Game");
+    window.create(sf::VideoMode(x, y), "Game");
 
-    // update the game shapes class:
-
+    // Create the game shapes class, in order to set the dimensions.
     GameShapes *gameShapes = GameShapes::getGameShapes();
-    gameShapes->setGameScreenDimensions(gameScreenWidth, gameScreenHeight);
-}
-
-Screen *Screen::getScreen()
-{
-    if (instance == nullptr)
-    {
-        instance = make_unique<Screen>();
-        cout << "[Screen] Setting up Screen" << endl;
-    }
-    return instance.get();
+    gameShapes->setGameScreenDimensions(x, y);
 }
 
 void Screen::Render()
 {
     GameShapes *gameShapes = GameShapes::getGameShapes();
-    pair<float, float> steps;
+    pair<float, float> playerSteps;
 
     // window.draw(rectangle);
-    auto &walls = gameShapes->getWalls();
-    auto &obsticles = gameShapes->getobsticals();
-    auto &countDown = gameShapes->getCountDown();
-    auto &chopper = gameShapes->getchopper();
-    auto &blackBackground = gameShapes->emptyBlack();
+    // auto &obsticles = gameShapes->getobsticals();
+    // auto &countDown = gameShapes->getCountDown();
+    // auto &chopper = gameShapes->getchopper();
+    // auto &blackBackground = gameShapes->emptyBlack();
 
     sf::Clock clock;
 
     const float speed = 700.0f; // pixels per second
 
-    sf::Texture texture;
-    if (!texture.loadFromFile("C:\\ws\\chopperGame\\pic\\Cloud.png"))
-    {
-        std::cerr << "Error loading image!" << std::endl;
-        return; // Exit if the image fails to load
-    }
+    // cout << "SETUP" << endl;
 
-    // Create a sprite from the texture
-    sf::Sprite sprite(texture);
-    sprite.setPosition(200, 150); // Set position in the window
-
-    float desiredWidth = gameScreenWidth / 4;   // Example desired width in pixels
-    float desiredHeight = gameScreenHeight / 4; // Example desired height in pixels
-
-    // Calculate scale factors
-    sf::Vector2f originalSize(texture.getSize());
-
-    float scaleX = desiredWidth / originalSize.x;
-    float scaleY = desiredHeight / originalSize.y;
-
-    sf::Texture texture2;
-    if (!texture2.loadFromFile("C:\\ws\\chopperGame\\pic\\Sky.png"))
-    {
-        std::cerr << "Error loading image!" << std::endl;
-        return; // Exit if the image fails to load
-    }
-
-    // Create a sprite from the texture
-    sf::Sprite sprite2(texture2);
-    sprite2.setPosition(0, 0); // Set position in the window
-
-    float desiredWidth2 = gameScreenWidth;   // Example desired width in pixels
-    float desiredHeight2 = gameScreenHeight; // Example desired height in pixels
-
-    // Calculate scale factors
-    sf::Vector2f originalSize2(texture2.getSize());
-
-    float scaleX2 = desiredWidth2 / originalSize2.x;
-    float scaleY2 = desiredHeight2 / originalSize2.y;
+    std::cout << "[Screen] - Setting up screen" << std::endl;
+    // sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
     window.setFramerateLimit(10000);
 
-    sprite.setScale(scaleX, scaleY);
-    sprite2.setScale(scaleX2, scaleY2);
+    sf::Texture texture;
+    if (!texture.loadFromFile("C:\\ws\\chopperGame\\pic\\player.png"))
+    { // Replace with your image file path
+        std::cerr << "Error loading texture!" << std::endl;
+        // return -1; // Exit if there's an error
+    }
+
+    // Create a sprite
+    sf::Sprite sprite;
+    sprite.setTexture(texture);
+
+    sf::Drawable *d;
+
+    // Optionally set the position of the sprite
+    // sprite.setPosition(100, 100); // Move the sprite to (100, 100)
 
     while (window.isOpen())
     {
@@ -116,55 +86,49 @@ void Screen::Render()
 
         float deltaTime = clock.restart().asSeconds();
 
-        window.draw(sprite2);
-        sprite.setColor(sf::Color(255, 255, 255, 120)); // Set to white color with transparency
-
-        window.draw(sprite);
-
         // check collision
 
-        if (!gameShapes->isCollionWithObsticle())
+        // if (!gameShapes->isCollionWithObsticle())
+        // {
+        //     gameShapes->checkCollisions();
+        //     gameShapes->updateMovables(deltaTime);
+
+        //     // check press
+        //     steps = {0, 0};
+        //     steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -speed * deltaTime : 0;
+        //     steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? speed * deltaTime : 0;
+        //     steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -speed * deltaTime : 0; // ALONB - there should be X speed and Y speed with proportions to the screen.
+        //     steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? speed * deltaTime : 0;
+
+        playerSteps = {0, 0};
+        playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -1 : 0;
+        playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 1 : 0;
+        playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -1 : 0;
+        playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? 1 : 0;
+        // ALONB - there should be X speed and Y speed with proportions to the screen.
+
+        gameShapes->updateMovables(deltaTime, playerSteps);
+
+        const vector<sf::Drawable *> &drawables = gameShapes->updateAndGetItemsToDraw(); // This must be refreshed.
+        // }
+        // if (drawables.size() == 0)
+        // {
+        //     cout << "InLoop " << drawables.size() << endl;
+        // }
+
+        for (const auto &i : drawables)
         {
-            gameShapes->checkCollisions();
-            gameShapes->updateObsicles(deltaTime);
+            // cout << "drawA " << endl;
+            // i->draw();
 
-            // check press
-            steps = {0, 0};
-            steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -speed * deltaTime : 0;
-            steps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? speed * deltaTime : 0;
-            steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -speed * deltaTime : 0; // ALONB - there should be X speed and Y speed with proportions to the screen.
-            steps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? speed * deltaTime : 0;
-
-            gameShapes->moveChopper(steps);
-        }
-
-        for (auto &i : obsticles)
-        {
             window.draw(*i);
+            // window.draw(*static_cast<sf::Sprite *>(i));
+            // d = &sprite;
+            // window.draw(*d);
+            // cout << "drawB " << endl;
         }
 
-        for (auto &i : walls)
-        {
-            window.draw(*i);
-        }
-
-        for (auto &i : countDown)
-        {
-            window.draw(*i);
-        }
-
-        for (auto &i : chopper)
-        {
-            window.draw(*i);
-        }
-
-        for (auto &i : blackBackground)
-        {
-            window.draw(*i);
-        }
-
-        // Desired pixel size
-
+        // cout << "draw " << endl;
         // Set the scale proportionally
 
         window.display();

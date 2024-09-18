@@ -20,12 +20,12 @@ typedef enum ManagerSm
 void Manager::Start()
 {
     MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
-    uint8_t countDown = 3; // STATIC ASERT not bigger than 3
-    uint8_t flickers = 4;  // STATIC ASSERT even.
+    int8_t countDown = 0; // STATIC ASERT not bigger than 3
+    uint8_t flickers = 4; // STATIC ASSERT even.
 
     GameShapes *GameShapes = GameShapes::getGameShapes();
 
-    GameShapes->setActiveGame();
+    // GameShapes->setActiveGame();
     while (1)
     {
         // std::cout << "R" << std::endl;
@@ -35,16 +35,15 @@ void Manager::Start()
         case MANAGER_SM_COUNT_DOWN:
         {
             std::cout << "[Manager] - counting down - " << static_cast<uint32_t>(countDown) << std::endl;
-            GameShapes->clearAll();
             GameShapes->setCountDown(countDown);
             this_thread::sleep_for(chrono::milliseconds(500));
             // std::cout << "S" << std::endl;
 
             countDown--;
-            if (countDown == 0)
+            if (countDown < 0)
             {
                 state = MANAGER_SM_GAME;
-                GameShapes->clearAll();
+                std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setActiveGame();
             }
         }
@@ -53,20 +52,22 @@ void Manager::Start()
         case MANAGER_SM_GAME:
         {
             // std::cout << "[Manager] - New shape" << std::endl;
-            if (GameShapes->isCollionWithObsticle())
-            {
-                state = MANAGER_SM_COLLISION;
-                cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
-            }
-            else
-            {
-                GameShapes->createNewObstible();
-                GameShapes->cleanUpOldObsticles();
+            // if (GameShapes->isCollionWithObsticle())
+            // {
+            //     state = MANAGER_SM_COLLISION;
+            //     // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
+            // }
+            // else
+            // {
+            //     // GameShapes->createNewShark();
+            //     GameShapes->cleanUpOldObsticles();
 
-                cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
+            //     // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
 
-                this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
-            }
+            //     this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
+            // }
+
+            this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
         }
         break;
 
@@ -81,7 +82,6 @@ void Manager::Start()
             if (flickers <= 0)
             {
                 state = MANAGER_SM_GAME;
-                GameShapes->clearAll();
                 GameShapes->setActiveGame();
                 flickers = 4;
             }
@@ -101,9 +101,9 @@ void Manager::Start()
 // auto &newestObsticle = obsticals.back();
 // sf::Vector2f positionOfNewestObsticle = newestObsticle->getPosition();
 
-// if (positionOfNewestObsticle.x < gameScreenWidth - spacing)
+// if (positionOfNewestObsticle.x < screenDimentions.x - spacing)
 // {
-//     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(gameScreenWidth, gameScreenHeight, wallThickness, spacing);
+//     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
 //     obsticals.push_back(move(obsticle));
 //     return;
 // }

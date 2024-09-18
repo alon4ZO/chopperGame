@@ -1,10 +1,16 @@
 #pragma once
 
 // graphics:
-#define GAME_BOARD_X_RATIO (80)
-#define GAME_BOARD_Y_RATIO (80)
-#define GAME_BOARD_WALL_WIDTH_RATIO (13) // Factor
-#define GAME_BOARD_WALL_COLORS (24, 84, 173)
+// #define GAME_BOARD_PLAYER_X_OFFSET_RATIO (0.2)
+#define GAME_BOARD_PLAYER_X_OFFSET_RATIO (0.1)
+#define GAME_BOARD_RATIO (0.8)
+// #define GAME_BOARD_WALL_WIDTH_RATIO (0.2) // Factor
+#define GAME_BOARD_WALL_WIDTH_RATIO (0.2) // Factor
+
+#define GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC (0.1) // Factor
+#define GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC (0.1) // Factor
+
+// #define GAME_BOARD_WALL_COLORS (24, 84, 173)
 
 #define NUMBER_HEIGHT_RATIO (3)
 

@@ -5,10 +5,24 @@
 #include <gameShapes.hpp>
 #include <random>
 #include <mutex>
+#include <filesystem>
+#include <definitions.h>
 
 using namespace std;
 
 unique_ptr<GameShapes> GameShapes::instance = nullptr;
+
+// class dimensions
+// { // ALONB -make this class a bit smarter, getters, setters, etc, check init, etc..
+// public:
+//     static sf::Vector2u screenDimentions;
+//     static sf::Vector2u activeGameDimentions;
+//     static uint32_t activeGameYOffset;
+// };
+// Definition of static members outside the class
+sf::Vector2u dimensions::screenDimentions;     // Definition
+sf::Vector2u dimensions::activeGameDimentions; // Definition
+uint32_t dimensions::activeGameYOffset;        // Definition (initialize if necessary)
 
 class shapeFactory // ALONB - put this below
 {
@@ -33,7 +47,7 @@ public:
     {
         unique_ptr<sf::RectangleShape> border = make_unique<sf::RectangleShape>();
         border->setSize(sf::Vector2f(xDim, yDim));
-        border->setFillColor(sf::Color GAME_BOARD_WALL_COLORS);
+        // border->setFillColor(sf::Color GAME_BOARD_WALL_COLORS);
 
         border->setPosition(0, yCord);
         return border;
@@ -75,25 +89,25 @@ public:
         return obsticle;
     }
 
-    static unique_ptr<sf::Shape> createChopper(uint32_t gameScreenWidth,
-                                               uint32_t gameScreenHeight)
-    {
-        uint32_t xDim = gameScreenWidth / 20; // ALONB - change all these to X percentage, and add to definitions.
-        uint32_t yDim = gameScreenHeight / 20;
-        uint32_t yPos = (gameScreenHeight - yDim) / 2;
-        uint32_t xPos = gameScreenWidth / 50;
+    // static unique_ptr<sf::Shape> createPlayer(uint32_t screenDimentions.x,
+    //                                           uint32_t screenDimentions.y)
+    // {
+    //     uint32_t xDim = screenDimentions.x / 20; // ALONB - change all these to X percentage, and add to definitions.
+    //     uint32_t yDim = screenDimentions.y / 20;
+    //     uint32_t yPos = (screenDimentions.y - yDim) / 2;
+    //     uint32_t xPos = screenDimentions.x / 50;
 
-        unique_ptr<sf::RectangleShape> mainBody;
-        mainBody = make_unique<sf::RectangleShape>();
-        mainBody->setSize(sf::Vector2f(xDim, yDim));
-        mainBody->setFillColor(sf::Color::Blue);
-        mainBody->setPosition(xPos, yPos);
-        return mainBody;
-    }
+    //     unique_ptr<sf::RectangleShape> mainBody;
+    //     mainBody = make_unique<sf::RectangleShape>();
+    //     mainBody->setSize(sf::Vector2f(xDim, yDim));
+    //     mainBody->setFillColor(sf::Color::Blue);
+    //     mainBody->setPosition(xPos, yPos);
+    //     return mainBody;
+    // }
 
-    static list<unique_ptr<sf::Shape>> createNum1(uint32_t boardWidth, uint32_t boardHeight)
+    static list<unique_ptr<sf::RectangleShape>> createNum1(uint32_t boardWidth, uint32_t boardHeight)
     {
-        list<unique_ptr<sf::Shape>> shapes;
+        list<unique_ptr<sf::RectangleShape>> shapes;
 
         uint32_t xDim, yDim, xPos, yPos;
 
@@ -112,9 +126,60 @@ public:
         return shapes;
     }
 
-    static list<unique_ptr<sf::Shape>> createNum2(uint32_t boardWidth, uint32_t boardHeight)
+    static string getPathForPng(string fileName)
     {
-        list<unique_ptr<sf::Shape>> shapes;
+
+        const char *currentFilePath = __FILE__;
+
+        std::cout << "Current File Path: " << currentFilePath << std::endl;
+
+        // Using filesystem to manipulate paths (C++17 and later)
+        std::filesystem::path path(currentFilePath);
+
+        // Getting the parent directory
+        std::filesystem::path parentDirectory = path.parent_path().parent_path();
+
+        // Construct a relative path from the current file location
+        // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
+        std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
+
+        // Outputting the resolved relative path
+
+        string res = relativePath.u8string();
+
+        for (char &c : res)
+        {
+            if (c == '\\')
+            {
+                c = '/';
+            }
+        }
+        std::cout << "Relative Path: " << res << std::endl;
+
+        // switch
+        //     list<unique_ptr<sf::RectangleShape>> shapes;
+
+        // uint32_t xDim, yDim, xPos, yPos;
+
+        // xDim = boardWidth / 30;
+        // yDim = boardHeight / NUMBER_HEIGHT_RATIO;
+        // xPos = boardWidth / 2;
+        // yPos = (boardHeight - yDim) / 2;
+
+        // unique_ptr<sf::RectangleShape> one_1;
+        // one_1 = make_unique<sf::RectangleShape>();
+        // one_1->setSize(sf::Vector2f(xDim, yDim));
+        // one_1->setFillColor(sf::Color::Yellow);
+        // one_1->setPosition(xPos, yPos);
+
+        // shapes.push_back(move(one_1));
+        // return shapes;
+        return res;
+    }
+
+    static list<unique_ptr<sf::RectangleShape>> createNum2(uint32_t boardWidth, uint32_t boardHeight)
+    {
+        list<unique_ptr<sf::RectangleShape>> shapes;
 
         uint32_t xDim, yDim, xPos, yPos;
 
@@ -170,9 +235,9 @@ public:
         shapes.push_back(move(two_5));
         return shapes;
     }
-    static list<unique_ptr<sf::Shape>> createNum3(uint32_t boardWidth, uint32_t boardHeight)
+    static list<unique_ptr<sf::RectangleShape>> createNum3(uint32_t boardWidth, uint32_t boardHeight) // ALONB - this should be "drawable lowercase"
     {
-        list<unique_ptr<sf::Shape>> shapes;
+        list<unique_ptr<sf::RectangleShape>> shapes;
 
         uint32_t xDim, yDim, xPos, yPos;
 
@@ -223,65 +288,111 @@ GameShapes *GameShapes::getGameShapes()
     if (instance == nullptr)
     {
         instance = make_unique<GameShapes>();
-        cout << "[GameShapes] - Creating game shapes" << endl;
     }
     return instance.get();
 }
 
-void GameShapes::setActiveGame() // This should be all the time... ALONB
+void GameShapes::clearAll()
 {
-    cout << "[GameShapes] - GameShapes - Creating walls, chopper" << endl;
-    wallThickness = gameScreenHeight / GAME_BOARD_WALL_WIDTH_RATIO;
 
-    unique_ptr<sf::Shape> ceiling = shapeFactory::createBorder(gameScreenWidth, wallThickness, 0);
-    unique_ptr<sf::Shape> chopperBody = shapeFactory::createChopper(gameScreenWidth, gameScreenHeight);
+    //
+    // for ()
+    sharks.clear();
+    meduzes.clear();
+    numCountdown.clear();
+    bubbles.clear();
+    player.release();
+    // /itemsToDraw.clear();
 
-    chopper.push_back(move(chopperBody));
-    walls.push_back(move(ceiling));
+    // rest player position ALONB
+}
+
+void GameShapes::setActiveGame()
+{
+    cout << "[GameShapes] - setActiveGame" << endl;
+
     isCollisions = {false, false};
+
+    std::lock_guard<std::mutex> lock(_mutex);
+    itemsToDraw.clear();
+
+    player = make_unique<Player>(0.08);
 };
+
+vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
+{
+    // cout << "[screen] - update" << endl;
+
+    itemsToDraw.clear();
+    if (player)
+    {
+        // cout << "T" << endl;
+        itemsToDraw.push_back(player->getDrawable());
+    }
+
+    return itemsToDraw;
+}
 
 void GameShapes::setCountDown(uint8_t num)
 {
-    list<unique_ptr<sf::Shape>> numShapes;
+    list<unique_ptr<sf::RectangleShape>> numShapes;
     switch (num)
     {
     case 1:
-        numShapes = shapeFactory::createNum1(gameScreenWidth, gameScreenHeight);
+        numShapes = shapeFactory::createNum1(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     case 2:
-        numShapes = shapeFactory::createNum2(gameScreenWidth, gameScreenHeight);
+        numShapes = shapeFactory::createNum2(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     case 3:
-        numShapes = shapeFactory::createNum3(gameScreenWidth, gameScreenHeight);
+        numShapes = shapeFactory::createNum3(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     }
 
     std::lock_guard<std::mutex> lock(_mutex);
-    countDown = move(numShapes);
+    numCountdown = move(numShapes);
 }
 
-void GameShapes::updateObsicles(float dt)
+void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
 {
 
     // const float speed = 600.0f; // this was not bad
     // const int spacing = 100;
 
-    const float speed = 200.0f; // pixels per second
-    const int spacing = 100;
+    // const float speed = 200.0f; // pixels per second
+    // const int spacing = 100;
 
     // std::lock_guard<std::mutex> lock(_mutex);
 
     // Move all obsitcles to the left according to time passed and speed.
-    for (auto &i : obsticals)
-    {
-        i->move(-speed * dt, 0.0f);
-    }
 
+    // for (auto &i : sharks)
+    // {
+    //     i->advance(-speed * dt, 0.0f);
+    // }
+
+    // for (auto &i : meduzes)
+    // {
+    //     i->advance(-speed * dt, 0.0f);
+    // }
+
+    // for (auto &i : bubbles)
+    // {
+    //     i->advance(-speed * dt, 0.0f);
+    // }
+
+    // check if player speed needs to change.
+
+    // cout << static_cast<int32_t>(playerSteps.first) << " " << static_cast<int32_t>(playerSteps.second) << endl;
+    // cout << "dt" << dt << endl;
+    if (player)
+    {
+        player->advance(dt, playerSteps.first, playerSteps.second);
+    }
     // create obsticle if screen is empty.
     // if (obsticals.size() == 0)
     // {
-    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(gameScreenWidth, gameScreenHeight, wallThickness, spacing);
+    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
     //     obsticals.push_back(move(obsticle));
     //     return;
     // }
@@ -290,9 +401,9 @@ void GameShapes::updateObsicles(float dt)
     // auto &newestObsticle = obsticals.back();
     // sf::Vector2f positionOfNewestObsticle = newestObsticle->getPosition();
 
-    // if (positionOfNewestObsticle.x < gameScreenWidth - spacing)
+    // if (positionOfNewestObsticle.x < screenDimentions.x - spacing)
     // {
-    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(gameScreenWidth, gameScreenHeight, wallThickness, spacing);
+    //     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
     //     obsticals.push_back(move(obsticle));
     //     return;
     // }
@@ -310,67 +421,88 @@ void GameShapes::updateObsicles(float dt)
     // check if to remove first object
 };
 
-void GameShapes::clearAll()
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-
-    // walls.clear(); // ALONB - make all these list part of a vector for safer cleaning.
-    chopper.clear();
-    obsticals.clear();
-    countDown.clear();
-}
-
-void GameShapes::createNewObstible()
-{
-
-    unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(gameScreenWidth, gameScreenHeight, wallThickness, 200);
-    std::lock_guard<std::mutex> lock(_mutex);
-    obsticals.push_back(move(obsticle));
-}
+// void GameShapes::createNewShark()
+// {
+//     Shark(sf::Vector2u gameScreenDims, float scale, float horizontalSpeed);
+//     unique_ptr<Shark> shark = make_unique<Shark>();
+//     std::lock_guard<std::mutex> lock(_mutex);
+//     sharks.push_back(move(shark));
+// }
 
 void GameShapes::cleanUpOldObsticles()
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
-    while (obsticals.size() > 0)
-    {
+    // use get Bounds insted of manual calc can use the check collision with the screen
 
-        auto &oldestObsticle = obsticals.front();
-        sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
+    // while (obsticals.size() > 0)
+    // {
 
-        if (floatRect.left + floatRect.width > 0)
-        {
-            break;
-        }
+    //     auto &oldestObsticle = obsticals.front();
+    //     sf::Rect<float> floatRect = oldestObsticle->getGlobalBounds();
 
-        obsticals.pop_front();
-    }
+    //     if (floatRect.left + floatRect.width > 0)
+    //     {
+    //         break;
+    //     }
+
+    //     obsticals.pop_front();
+    // }
 }
 
 void GameShapes::checkCollisions()
 {
 
-    for (auto &i : obsticals)
+    for (auto &i : sharks)
     {
-        if (chopper.front()->getGlobalBounds().intersects(i->getGlobalBounds()))
+        if (i->checkColision(player->getBounds()))
         {
             isCollisions.first = true;
-            return; // ALONB - add extra life.
+            break;
         }
     }
+
+    for (auto &i : meduzes)
+    {
+        if (i->checkColision(player->getBounds()))
+        {
+            isCollisions.first = true;
+            break;
+        }
+    }
+
+    // for (auto &i : obsticals)
+    // {
+    //     if (chopper.front()->getGlobalBounds().intersects(i->getGlobalBounds()))
+    //     {
+    //         isCollisions.first = true;
+    //         return; // ALONB - add extra life.
+    //     }
+    // }
 }
 
 void GameShapes::flickerScreen()
 {
-    if (blackout.size() == 1)
-    {
-        blackout.pop_back();
-    }
-    else
-    {
+    blackout = blackout ? false : true;
+    // if (blackout.size() == 1)
+    // {
+    //     blackout.pop_back();
+    // }
+    // else
+    // {
 
-        unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(gameScreenWidth, gameScreenHeight, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
-        std::lock_guard<std::mutex> lock(_mutex);
-        blackout.push_back(move(shape));
-    }
+    //     unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
+    //     std::lock_guard<std::mutex> lock(_mutex);
+    //     blackout.push_back(move(shape));
+    // }
 }
+
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("Meduz"), scale, {0, verticleSpeed}) {};
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("Shark"), scale, {horizontalSpeed, 0}) {};
+Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("Bubble"), scale, {0, verticleSpeed}) {};
+Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("Player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+{
+    cout << "CREATING P" << endl;
+    setLocation(dimensions::screenDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
+                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
+};

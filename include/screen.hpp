@@ -10,15 +10,11 @@ using namespace std;
 class Screen
 {
 private:
-    static unique_ptr<Screen> instance;
-    uint32_t gameScreenWidth;
-    uint32_t gameScreenHeight;
+    // uint32_t screenDimentions.x;
+    // uint32_t screenDimentions.y;
     sf::RenderWindow window;
 
 public:
-    Screen(uint8_t xRatioPercentage = GAME_BOARD_X_RATIO, uint8_t yRatioPercentage = GAME_BOARD_Y_RATIO);
-    Screen(Screen &) = delete;
-    void operator=(Screen &) = delete;
-    static Screen *getScreen();
+    Screen(float ratio = GAME_BOARD_RATIO);
     void Render();
 };
