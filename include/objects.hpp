@@ -9,6 +9,54 @@
 
 using namespace std;
 
+class shapeFactory
+{
+private:
+    static uint32_t numHeightPixels;
+    static uint32_t numWidthPixels;
+
+public:
+    static list<unique_ptr<sf::RectangleShape>> createNum1(uint32_t boardWidth, uint32_t boardHeight);
+    static list<unique_ptr<sf::RectangleShape>> createNum2(uint32_t boardWidth, uint32_t boardHeight);
+    static list<unique_ptr<sf::RectangleShape>> createNum3(uint32_t boardWidth, uint32_t boardHeight); // ALONB - this should be
+    static string getPathForPng(string fileName, string postfix, uint8_t randomOptions = 1);           // Put this with the random num generator in utils tab.
+};
+
+class GameText
+{
+public:
+    // GameText(scale, xPosition)
+    GameText()
+    {
+
+        string filePath = shapeFactory::getPathForPng("RowsOfSunflowers", ".ttf");
+        if (!font.loadFromFile(filePath))
+        {
+            std::cerr << "Error loading font!" << std::endl;
+            return; // Exit if the image fails to load
+        }
+        text.setString("hello");
+        text.setFont(font);
+        text.setCharacterSize(30);
+        text.setFillColor(sf::Color::Red);
+
+        text.setPosition(dimensions::activeGameDimentions.x / 2, dimensions::activeGameDimentions.y / 2);
+        // set the position of the object
+
+        // void 	setScale (const Vector2f &factors)
+    }
+
+    void updateText() {}
+    sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
+    {
+        return &text;
+    }
+
+private:
+    sf::Text text;
+    sf::Font font;
+};
+
 class RegularSprite
 {
 public:
@@ -153,17 +201,4 @@ public:
             }
         }
     }
-};
-
-class shapeFactory
-{
-private:
-    static uint32_t numHeightPixels;
-    static uint32_t numWidthPixels;
-
-public:
-    static list<unique_ptr<sf::RectangleShape>> createNum1(uint32_t boardWidth, uint32_t boardHeight);
-    static list<unique_ptr<sf::RectangleShape>> createNum2(uint32_t boardWidth, uint32_t boardHeight);
-    static list<unique_ptr<sf::RectangleShape>> createNum3(uint32_t boardWidth, uint32_t boardHeight); // ALONB - this should be
-    static string getPathForPng(string fileName, uint8_t randomOptions = 1);                           // Put this with the random num generator in utils tab.
 };

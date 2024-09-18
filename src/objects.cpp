@@ -9,7 +9,7 @@
 
 using namespace std;
 
-string shapeFactory::getPathForPng(string fileName, uint8_t randomOptions) // Put this with the random num generator in utils tab.
+string shapeFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
 {
 
     const char *currentFilePath = __FILE__;
@@ -32,7 +32,7 @@ string shapeFactory::getPathForPng(string fileName, uint8_t randomOptions) // Pu
 
     // Construct a relative path from the current file location
     // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
-    std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + ".png"); // Example relative
+    std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + postfix); // Example relative
 
     // Outputting the resolved relative path
 
@@ -49,18 +49,18 @@ string shapeFactory::getPathForPng(string fileName, uint8_t randomOptions) // Pu
     return res;
 }
 
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", 2), scale, {0, verticleSpeed})
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
 {
     setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark"), scale, {horizontalSpeed, 0})
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble"), scale, {0, verticleSpeed}) {};
-Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble", ".png"), scale, {0, verticleSpeed}) {};
+Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);

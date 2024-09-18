@@ -21,6 +21,9 @@ private:
     list<unique_ptr<Meduz>> meduzes;
     list<unique_ptr<Bubble>> bubbles;
     list<unique_ptr<sf::RectangleShape>> numCountdown;
+    unique_ptr<GameText> score;
+
+    // Draw it
 
     // vector<bubbles> score;
 

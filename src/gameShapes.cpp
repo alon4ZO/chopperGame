@@ -65,8 +65,17 @@ void GameShapes::setActiveGame()
     drawablesList.clear();
 
     player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO);
-};
+    score = make_unique<GameText>();
 
+    // sf::Font font;
+    // font.loadFromFile("arial.ttf");
+    // Create a text
+    //     sf::Text text("hello", font);
+    //     text.setCharacterSize(30);
+    //     text.setStyle(sf::Text::Bold);
+    //     text.setFillColor(sf::Color::Red);
+    // };
+};
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
     // cout << "[screen] - update" << endl;
@@ -82,6 +91,11 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     {
         // cout << "T" << endl;
         drawablesList.push_back(player->getDrawable());
+    }
+    if (score)
+    {
+        // cout << "T" << endl;
+        drawablesList.push_back(score->getDrawable());
     }
 
     for (const auto &i : numCountdown)
