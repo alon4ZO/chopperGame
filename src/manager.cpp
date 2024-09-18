@@ -20,8 +20,9 @@ typedef enum ManagerSm
 void Manager::Start()
 {
     MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
-    int8_t countDown = 0; // STATIC ASERT not bigger than 3
+    int8_t countDown = 3; // STATIC ASERT not bigger than 3
     uint8_t flickers = 4; // STATIC ASSERT even.
+    int8_t meduzCountDown;
 
     GameShapes *GameShapes = GameShapes::getGameShapes();
 
@@ -36,7 +37,6 @@ void Manager::Start()
         {
             std::cout << "[Manager] - counting down - " << static_cast<uint32_t>(countDown) << std::endl;
             GameShapes->setCountDown(countDown);
-            this_thread::sleep_for(chrono::milliseconds(500));
             // std::cout << "S" << std::endl;
 
             countDown--;
@@ -45,12 +45,15 @@ void Manager::Start()
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setActiveGame();
+                continue;
             }
+            this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
         }
         break;
 
         case MANAGER_SM_GAME:
         {
+
             // std::cout << "[Manager] - New shape" << std::endl;
             // if (GameShapes->isCollionWithObsticle())
             // {
@@ -59,15 +62,18 @@ void Manager::Start()
             // }
             // else
             // {
-            //     // GameShapes->createNewShark();
-            //     GameShapes->cleanUpOldObsticles();
+            GameShapes->createNewShark();
+            if (meduzCountDown-- <= 0)
+            {
+                GameShapes->createNewMeduz();
+                meduzCountDown = getRandomNumber(5, 7);
+            }
 
-            //     // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
+            // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
 
-            //     this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
             // }
 
-            this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHAPES_PER_SEC))); // ALONB - randomize this a bit?
+            this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
         }
         break;
 

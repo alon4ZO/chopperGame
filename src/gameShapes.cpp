@@ -3,7 +3,6 @@
 #include <iostream>
 #include <screen.hpp>
 #include <gameShapes.hpp>
-#include <random>
 #include <mutex>
 #include <filesystem>
 #include <definitions.h>
@@ -29,18 +28,6 @@ class shapeFactory // ALONB - put this below
 private:
     static uint32_t numHeightPixels;
     static uint32_t numWidthPixels;
-    static uint32_t getRandomNumber(uint32_t min, uint32_t max) // ALONB - how could this class own some of the dimentions?
-    {
-        // Create a random number generator and seed it with a random device
-        std::random_device rd;
-        std::mt19937 eng(rd());
-
-        // Create a uniform distribution in the specified range
-        std::uniform_int_distribution<> distr(min, max);
-
-        // Return a random number
-        return distr(eng);
-    }
 
 public:
     static unique_ptr<sf::Shape> createBorder(uint32_t xDim, uint32_t yDim, uint32_t yCord)
@@ -67,25 +54,25 @@ public:
                                                 uint32_t wallThickness,
                                                 uint32_t spacing) // ALONB - the spacing has to be re moved.
     {
-        uint32_t xDim = getRandomNumber(spacing / 4, spacing * 12 / 10);
-        uint32_t yDim = getRandomNumber((boardHeight - wallThickness) / 13, (boardHeight - wallThickness) * 1.2 / 13);
-        uint32_t yPos = getRandomNumber(wallThickness, boardHeight - yDim);
+        // uint32_t xDim = getRandomNumber(spacing / 4, spacing * 12 / 10);
+        // uint32_t yDim = getRandomNumber((boardHeight - wallThickness) / 13, (boardHeight - wallThickness) * 1.2 / 13);
+        // uint32_t yPos = getRandomNumber(wallThickness, boardHeight - yDim);
 
-        static sf::Texture texture;
-        if (!texture.loadFromFile("C:\\ws\\chopperGame\\pic\\grassTexture.png"))
-        {
-            cout << "Fail" << endl; // Failed to load texture
-        }
+        // static sf::Texture texture;
+        // if (!texture.loadFromFile("C:\\ws\\chopperGame\\pic\\grassTexture.png"))
+        // {
+        //     cout << "Fail" << endl; // Failed to load texture
+        // }
 
-        texture.setRepeated(true);
+        // texture.setRepeated(true);
 
         unique_ptr<sf::RectangleShape> obsticle;
-        obsticle = make_unique<sf::RectangleShape>();
-        obsticle->setSize(sf::Vector2f(xDim, yDim));
-        obsticle->setFillColor(sf::Color(70, 107, 41));
-        obsticle->setTexture(&texture);
-        // obsticle->setTextureRect(sf::IntRect(0, 0, 300, 300)); // Size of the texture to repeat
-        obsticle->setPosition(xPos, yPos);
+        // obsticle = make_unique<sf::RectangleShape>();
+        // obsticle->setSize(sf::Vector2f(xDim, yDim));
+        // obsticle->setFillColor(sf::Color(70, 107, 41));
+        // obsticle->setTexture(&texture);
+        // // obsticle->setTextureRect(sf::IntRect(0, 0, 300, 300)); // Size of the texture to repeat
+        // obsticle->setPosition(xPos, yPos);
         return obsticle;
     }
 
@@ -126,12 +113,14 @@ public:
         return shapes;
     }
 
-    static string getPathForPng(string fileName)
+    static string getPathForPng(string fileName, uint8_t randomOptions = 1) // Put this with the random num generator in utils tab.
     {
 
         const char *currentFilePath = __FILE__;
+        uint8_t option;
+        string flavor = "";
 
-        std::cout << "Current File Path: " << currentFilePath << std::endl;
+        // std::cout << "Current File Path: " << currentFilePath << std::endl;
 
         // Using filesystem to manipulate paths (C++17 and later)
         std::filesystem::path path(currentFilePath);
@@ -139,9 +128,15 @@ public:
         // Getting the parent directory
         std::filesystem::path parentDirectory = path.parent_path().parent_path();
 
+        if (randomOptions != 1)
+        {
+            option = getRandomNumber((0), randomOptions - 1);
+            flavor = "_" + to_string(option);
+        }
+
         // Construct a relative path from the current file location
         // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
-        std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
+        std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + ".png"); // Example relative
 
         // Outputting the resolved relative path
 
@@ -154,7 +149,7 @@ public:
                 c = '/';
             }
         }
-        std::cout << "Relative Path: " << res << std::endl;
+        // std::cout << "Relative Path: " << res << std::endl;
 
         // switch
         //     list<unique_ptr<sf::RectangleShape>> shapes;
@@ -330,6 +325,24 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
         itemsToDraw.push_back(player->getDrawable());
     }
 
+    for (const auto &i : numCountdown)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        itemsToDraw.push_back(i.get()); // ALONB - use a shared pointer instead?
+    }
+
+    for (const auto &i : sharks)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        itemsToDraw.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+    }
+
+    for (const auto &i : meduzes)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        itemsToDraw.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+    }
+
     return itemsToDraw;
 }
 
@@ -366,10 +379,14 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
 
     // Move all obsitcles to the left according to time passed and speed.
 
-    // for (auto &i : sharks)
-    // {
-    //     i->advance(-speed * dt, 0.0f);
-    // }
+    for (auto &i : sharks)
+    {
+        i->advance(dt);
+    }
+    for (auto &i : meduzes)
+    {
+        i->advance(dt);
+    }
 
     // for (auto &i : meduzes)
     // {
@@ -421,13 +438,68 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
     // check if to remove first object
 };
 
-// void GameShapes::createNewShark()
-// {
-//     Shark(sf::Vector2u gameScreenDims, float scale, float horizontalSpeed);
-//     unique_ptr<Shark> shark = make_unique<Shark>();
-//     std::lock_guard<std::mutex> lock(_mutex);
-//     sharks.push_back(move(shark));
-// }
+void GameShapes::createNewShark()
+{
+    bool collisionDuringCreation;
+    do
+    {
+        collisionDuringCreation = false;
+        unique_ptr<Shark> newShark = make_unique<Shark>(0.1, -0.25);
+
+        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
+
+        for (const auto &i : sharks)
+        {
+            // if (i->checkColision(newShark.get()->getBounds()))
+            if (i->checkColision(newShark->getBounds()))
+            {
+                collisionDuringCreation = true;
+                // cout << "COL" << endl;
+                break;
+            }
+        }
+
+        if (!collisionDuringCreation)
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            sharks.push_back(move(newShark));
+            // cout << "SOL" << endl;
+        }
+
+    } while (collisionDuringCreation);
+}
+
+void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
+{
+    // ALONB - add a non colliding private function to be used by meduz, shark.
+    bool collisionDuringCreation;
+    do
+    {
+        collisionDuringCreation = false;
+        unique_ptr<Meduz> newMeduz = make_unique<Meduz>(0.1, -0.25);
+
+        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
+
+        for (const auto &i : meduzes)
+        {
+            // if (i->checkColision(newShark.get()->getBounds()))
+            if (i->checkColision(newMeduz->getBounds()))
+            {
+                collisionDuringCreation = true;
+                // cout << "COL" << endl;
+                break;
+            }
+        }
+
+        if (!collisionDuringCreation)
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            meduzes.push_back(move(newMeduz));
+            cout << "SOL" << endl;
+        }
+
+    } while (collisionDuringCreation);
+}
 
 void GameShapes::cleanUpOldObsticles()
 {
@@ -497,12 +569,19 @@ void GameShapes::flickerScreen()
     // }
 }
 
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("Meduz"), scale, {0, verticleSpeed}) {};
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("Shark"), scale, {horizontalSpeed, 0}) {};
-Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("Bubble"), scale, {0, verticleSpeed}) {};
-Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("Player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", 2), scale, {0, verticleSpeed})
 {
-    cout << "CREATING P" << endl;
-    setLocation(dimensions::screenDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
+    setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
+                dimensions::screenDimentions.y);
+};
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark"), scale, {horizontalSpeed, 0})
+{
+    setLocation(dimensions::activeGameDimentions.x,
+                dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
+};
+Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble"), scale, {0, verticleSpeed}) {};
+Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+{
+    setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };

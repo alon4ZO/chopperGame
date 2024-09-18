@@ -14,6 +14,6 @@ private:
 public:
     Manager(uint32_t score = MANAGER_INITIAL_SCORE,
             uint32_t speed = MANAGER_INITIAL_OBSTICLE_SPEED_PIX_PER_SEC,
-            uint32_t maxObsticlesPerSecond = MANAGER_INITIAL_SHAPES_PER_SEC) {};
+            uint32_t maxObsticlesPerSecond = MANAGER_INITIAL_SHARKS_PER_SEC) {}; // ALONB MANAGER_INITIAL_SHARKS_PER_SECis here 2 times
     void Start();
 };

@@ -23,7 +23,7 @@ public:
     RegularSprite(string filePath, float scale) // ALONB - game screen dimensions should be retrieved every time or just saved? maybe it's a problem because the speed is also based on the screen dimentions and is set far above...
     // ALONB - scale is according to X
     {
-        cout << "Making S " << filePath << "scale: " << scale << "x,y" << dimensions::screenDimentions.x << " " << dimensions::screenDimentions.y << endl;
+        // cout << "Making S " << filePath << "scale: " << scale << "x,y" << dimensions::screenDimentions.x << " " << dimensions::screenDimentions.y << endl;
         if (!texture.loadFromFile(filePath))
         {
             std::cerr << "Error loading image!" << std::endl;
@@ -38,7 +38,7 @@ public:
 
         // sprite.setPosition(500, 500);
         // Create a sprite from the texture
-        cout << "imageScale " << imageScale << endl;
+        // cout << "imageScale " << imageScale << endl;
         sprite.setTexture(texture);
         //  sprite.setPosition(locationPix.x, locationPix.y);
         sprite.setScale(imageScale, imageScale);
@@ -85,9 +85,9 @@ private:
 public:
     ~Obsticle() {}
     Obsticle(string filePath, float scale, sf::Vector2f speed) : MovingSprite(filePath, scale, speed) {} // ALONB - optimize
-    bool checkColision(sf::FloatRect)
+    bool checkColision(sf::FloatRect rectangle)
     {
-        return false;
+        return this->getBounds().intersects(rectangle);
     }
 };
 
@@ -95,14 +95,21 @@ class Meduz : public Obsticle
 {
 public:
     Meduz(float scale, float verticleSpeed);
-    void advance(float dt, int8_t x = 1, int8_t y = 1) {}
+    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    {
+
+        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+    }
 };
 
 class Shark : public Obsticle
 {
 public:
     Shark(float scale, float horizontalSpeed);
-    void advance(float dt, int8_t x = 1, int8_t y = 1) {}
+    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    {
+        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+    }
 };
 
 class Bubble : public MovingSprite
@@ -119,25 +126,34 @@ public:
     void advance(float dt, int8_t x = 1, int8_t y = 1)
     {
 
-        // {
-        //     float xx = speed.x * x * dt;
-        //     float yy = speed.y * y * dt;
+        float dx = dt * speedPixPerSecond.x * x; // ALONB - this turns out to be a bit wasteful...
+        float dy = dt * speedPixPerSecond.y * y;
 
-        // cout << static_cast<int32_t>(playerSteps.first) << " " << static_cast<int32_t>(playerSteps.second) << endl;
+        // This has to be calculated with the post move, otherwise it gets stuck!
+        sf::FloatRect screenRect(this->getBounds().width, dimensions::activeGameYOffset + this->getBounds().height, dimensions::activeGameDimentions.x - 2 * this->getBounds().width, dimensions::activeGameDimentions.y - 2 * this->getBounds().height);
 
-        // cout
-        //     << "x: " << static_cast<int32_t>(x) << "y: " << static_cast<int32_t>(y) << " " << dt << endl;
+        dx = dt * speedPixPerSecond.x * x;
+        dy = 0;
+        {
 
-        float spx = (float)dt * speedPixPerSecond.x * x;
-        float spy = dt * speedPixPerSecond.y * y;
+            sf::FloatRect playerPostMoveRect(this->getBounds().left + dx, this->getBounds().top + dy, this->getBounds().width, this->getBounds().height);
 
-        // cout << "spx: " << spx << "spy: " << spy << endl;
-        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
-        // cout << "advance" << endl;
-        // sprite.move(500 * x * dt, 500 * y * dt);
-        // sprite.move(1, 1);
+            if (screenRect.intersects(playerPostMoveRect))
+            {
+                sprite.move(dx, 0);
+            }
+        }
 
-        // sprite.move(0 * x * dt, 0 * y * dt);
+        dx = 0;
+        dy = dt * speedPixPerSecond.y * y;
+        {
+            sf::FloatRect playerPostMoveRect(this->getBounds().left + dx, this->getBounds().top + dy, this->getBounds().width, this->getBounds().height);
+
+            if (screenRect.intersects(playerPostMoveRect))
+            {
+                sprite.move(0, dy);
+            }
+        }
     }
 };
 
@@ -220,7 +236,8 @@ public:
     void
     updateMovables(float dt, pair<int8_t, int8_t> playerSteps);
 
-    // void createNewShark();
+    void createNewShark();
+    void createNewMeduz();
     void cleanUpOldObsticles();
     void moveChopper(pair<float, float> direction) // ALONB - move this from here.
     {
