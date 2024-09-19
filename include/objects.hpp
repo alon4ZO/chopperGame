@@ -35,21 +35,42 @@ public:
             std::cerr << "Error loading font!" << std::endl;
             return; // Exit if the image fails to load
         }
-        text.setString("hello");
+        text.setString("");
         text.setFont(font);
-        text.setCharacterSize(30);
+        text.setCharacterSize(dimensions::activeGameYOffset / 2);
         text.setFillColor(sf::Color::Red);
 
-        text.setPosition(dimensions::activeGameDimentions.x / 2, dimensions::activeGameDimentions.y / 2);
+        // sf::FloatRect originalSize(text.getGlobalBounds());
+
+        // float desiredHeight = dimensions::activeGameYOffset * 0.5; // Example desired width in pixels
+        // float imageScale = desiredHeight / originalSize.height;
+        // text.setScale(imageScale, imageScale);
+
+        // text.setScale(float factorX, float factorY)
+
+        // text.setPosition(dimensions::activeGameDimentions.x / 2, dimensions::activeGameDimentions.y / 2);
+        text.setPosition(dimensions::screenDimentions.x * 0.9, (dimensions::activeGameYOffset / 4));
+        // text.setPosition(dimensions::screenDimentions.x * 0.8, 0);
         // set the position of the object
 
         // void 	setScale (const Vector2f &factors)
     }
 
-    void updateText() {}
+    void updateText(string str)
+    {
+        text.setString(str);
+        auto rect = text.getGlobalBounds();
+        cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << endl;
+    }
+
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
     {
         return &text;
+    }
+
+    sf::FloatRect getBounds()
+    {
+        return text.getGlobalBounds();
     }
 
 private:

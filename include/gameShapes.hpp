@@ -22,6 +22,8 @@ private:
     list<unique_ptr<Bubble>> bubbles;
     list<unique_ptr<sf::RectangleShape>> numCountdown;
     unique_ptr<GameText> score;
+    unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
+    list<unique_ptr<RegularSprite>> lives;
 
     // Draw it
 
@@ -57,6 +59,8 @@ public:
 
     void setCountDown(uint8_t num);
 
+    void setNumOfLives(uint8_t num);
+
     void setGameScreenDimensions(uint32_t x, uint32_t y)
     {
 
@@ -79,6 +83,8 @@ public:
     // const list<unique_ptr<sf::Shape>> &emptyBlack() const { return blackout; } // ALONB - instead of putting this on top, I should really just not preset anything.
     void
     updateMovables(float dt, pair<int8_t, int8_t> playerSteps);
+
+    void updateScore(string score);
 
     void createNewShark();
     void createNewMeduz();

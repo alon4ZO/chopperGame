@@ -65,6 +65,7 @@ void Manager::Start()
             else
             {
                 GameShapes->createNewShark();
+
                 if (meduzCountDown-- <= 0)
                 {
                     GameShapes->createNewMeduz();
@@ -73,11 +74,13 @@ void Manager::Start()
 
                 GameShapes->cleanUpOldObjects();
 
+                points += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                GameShapes->updateScore(to_string(points));
+                cout << "OUT" << points << endl;
+                cout << "OUT" << to_string(points) << endl;
+
                 // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
-
-                points += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
-                cout << points;
             }
         }
         break;

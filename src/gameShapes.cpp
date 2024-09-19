@@ -49,6 +49,8 @@ void GameShapes::clearAll()
     numCountdown.clear();
     bubbles.clear();
     player.release();
+
+    // ALONB - this should only clear player and obsticles, change name accordingly.
     // /itemsToDraw.clear();
 
     // rest player position ALONB
@@ -62,14 +64,16 @@ void GameShapes::setActiveGame()
     isCollisions = {false, false};
 
     std::lock_guard<std::mutex> lock(_mutex);
-    drawablesList.clear();
+    drawablesList.clear(); // ALONB - this clears the score as well, maybe it should stay!
 
     player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO);
     score = make_unique<GameText>();
+    scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
+    scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
 
     // sf::Font font;
     // font.loadFromFile("arial.ttf");
-    // Create a text
+    // Create a tex_si
     //     sf::Text text("hello", font);
     //     text.setCharacterSize(30);
     //     text.setStyle(sf::Text::Bold);
@@ -96,6 +100,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     {
         // cout << "T" << endl;
         drawablesList.push_back(score->getDrawable());
+    }
+
+    if (scoreSign)
+    {
+        // cout << "T" << endl;
+        drawablesList.push_back(scoreSign->getDrawable());
     }
 
     for (const auto &i : numCountdown)
@@ -157,8 +167,18 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
     }
 };
 
+void GameShapes::updateScore(string score)
+{
+    cout << "IN" << score << endl;
+
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    this->score->updateText(score);
+}
+
 void GameShapes::createNewShark()
 {
+
     bool collisionDuringCreation;
     do
     {
