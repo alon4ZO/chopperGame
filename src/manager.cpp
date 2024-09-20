@@ -24,8 +24,9 @@ void Manager::Start()
     uint8_t flickers = 4; // STATIC ASSERT even.
     int8_t meduzCountDown = getRandomNumber(5, 7);
     uint32_t points;
+    uint8_t lives = 5;
 
-    GameShapes *GameShapes = GameShapes::getGameShapes();
+    GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
 
     // GameShapes->setActiveGame();
     while (1)
@@ -45,7 +46,8 @@ void Manager::Start()
             {
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
-                GameShapes->setActiveGame();
+                GameShapes->setLives(lives);
+                GameShapes->setActiveGame(lives);
                 points = 0;
                 continue;
             }
@@ -59,6 +61,7 @@ void Manager::Start()
             // std::cout << "[Manager] - New shape" << std::endl;
             if (GameShapes->isCollionWithObsticle())
             {
+                lives--;
                 state = MANAGER_SM_COLLISION;
                 // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
             }
@@ -76,8 +79,8 @@ void Manager::Start()
 
                 points += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
                 GameShapes->updateScore(to_string(points));
-                cout << "OUT" << points << endl;
-                cout << "OUT" << to_string(points) << endl;
+                // cout << "OUT" << points << endl;
+                // cout << "OUT" << to_string(points) << endl;
 
                 // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
@@ -87,7 +90,7 @@ void Manager::Start()
 
         case MANAGER_SM_COLLISION:
         {
-            cout << "COLLLLLLLLL" << endl;
+            // cout << "COLLLLLLLLL" << endl;
             GameShapes->flickerScreen();
 
             // std::cout << "[Manager] - New shape" << std::endl;
@@ -96,7 +99,7 @@ void Manager::Start()
             if (flickers <= 0)
             {
                 state = MANAGER_SM_GAME;
-                GameShapes->setActiveGame();
+                GameShapes->setActiveGame(lives);
                 flickers = 4;
             }
         }

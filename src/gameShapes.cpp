@@ -56,7 +56,7 @@ void GameShapes::clearAll()
     // rest player position ALONB
 }
 
-void GameShapes::setActiveGame()
+void GameShapes::setActiveGame(uint8_t lives)
 {
     clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
@@ -70,6 +70,8 @@ void GameShapes::setActiveGame()
     score = make_unique<GameText>();
     scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
+
+    livesToDraw = lives - 1;
 
     // sf::Font font;
     // font.loadFromFile("arial.ttf");
@@ -86,16 +88,6 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 
     drawablesList.clear();
 
-    if (blackout)
-    {
-        return drawablesList;
-    }
-
-    if (player)
-    {
-        // cout << "T" << endl;
-        drawablesList.push_back(player->getDrawable());
-    }
     if (score)
     {
         // cout << "T" << endl;
@@ -106,6 +98,43 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     {
         // cout << "T" << endl;
         drawablesList.push_back(scoreSign->getDrawable());
+    }
+
+    // auto it = lives.begin();
+    // int8_t livesNoBlink = livesToDraw - 1;
+
+    // while (livesNoBlink >= 0)
+    // {
+    //     it++;
+    //     livesNoBlink--;
+    //     // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+    //     drawablesList.push_back((*it)->getDrawable()); // ALONB - use a shared pointer instead?
+    // }
+
+    int8_t livesToDrawNow = livesToDraw - (blackout ? 1 : 0);
+    auto itt = lives.begin();
+
+    while (livesToDrawNow > 0)
+    {
+        // cout << "EEEEEEEEEEEEEEEEE" << endl;
+        drawablesList.push_back((*itt)->getDrawable()); // ALONB - use a shared pointer instead?
+        livesToDrawNow--;
+        itt++;
+    }
+
+    // cout << "dddd" << endl;
+
+    if (blackout)
+    {
+        return drawablesList;
+    }
+
+    // drawablesList.push_back(it->getDrawable()); // ALONB - use a shared pointer instead?
+
+    if (player)
+    {
+        // cout << "T" << endl;
+        drawablesList.push_back(player->getDrawable());
     }
 
     for (const auto &i : numCountdown)
@@ -169,7 +198,7 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
 
 void GameShapes::updateScore(string score)
 {
-    cout << "IN" << score << endl;
+    // cout << "IN" << score << endl;
 
     std::lock_guard<std::mutex> lock(_mutex);
 
@@ -248,7 +277,7 @@ void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and
 
     sf::FloatRect screenRect{0 - static_cast<float>(100), dimensions::activeGameYOffset - static_cast<float>(100), dimensions::activeGameDimentions.x + static_cast<float>(200), dimensions::activeGameDimentions.y + static_cast<float>(200)};
 
-    cout << sharks.size() << endl;
+    // cout << sharks.size() << endl;
     // cout << "M" << meduzes.size() << endl;
     while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
     {
@@ -273,7 +302,7 @@ void GameShapes::checkCollisions()
         if (i->checkColision(player->getBounds()))
         {
             isCollisions.first = true;
-            cout << "COLS" << endl;
+            // cout << "COLS" << endl;
             break;
         }
     }
@@ -282,7 +311,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            cout << "COLM" << endl;
+            // cout << "COLM" << endl;
             isCollisions.first = true;
             break;
         }
@@ -298,9 +327,30 @@ void GameShapes::checkCollisions()
     // }
 }
 
+void GameShapes::setLives(uint8_t num)
+{
+
+    std::lock_guard<std::mutex> lock(_mutex);
+    uint32_t firstLiveLocation = dimensions::screenDimentions.x * 0.1;
+
+    cout << "Setting lives icons" << endl;
+
+    for (int i = 0; i < num; i++)
+    {
+        // ALONB - change the way that the RegularSprite consturctor works because i have to add this 0 in the X and it's messy.
+        unique_ptr<lifeIcon> life = make_unique<lifeIcon>(i);
+
+        // Move to correct location
+        lives.push_back(move(life));
+    }
+}
+
 void GameShapes::flickerScreen()
 {
+    std::lock_guard<std::mutex> lock(_mutex);
+
     blackout = blackout ? false : true;
+
     // if (blackout.size() == 1)
     // {
     //     blackout.pop_back();

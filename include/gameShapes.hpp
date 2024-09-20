@@ -25,6 +25,7 @@ private:
     unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
     list<unique_ptr<RegularSprite>> lives;
 
+    uint8_t livesToDraw;
     // Draw it
 
     // vector<bubbles> score;
@@ -55,11 +56,11 @@ public:
     std::mutex _mutex; // Define the mutex
 
     // void clearAll(); // ALONB - make all these list part of a vector for safer cleaning.
-    void setActiveGame();
+    void setActiveGame(uint8_t lives);
 
     void setCountDown(uint8_t num);
 
-    void setNumOfLives(uint8_t num);
+    void setLives(uint8_t num);
 
     void setGameScreenDimensions(uint32_t x, uint32_t y)
     {

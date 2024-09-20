@@ -60,7 +60,7 @@ public:
     {
         text.setString(str);
         auto rect = text.getGlobalBounds();
-        cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << endl;
+        // cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << endl;
     }
 
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
@@ -81,7 +81,7 @@ private:
 class RegularSprite
 {
 public:
-    RegularSprite(string filePath, float scale) // ALONB - game screen dimensions should be retrieved every time or just saved? maybe it's a problem because the speed is also based on the screen dimentions and is set far above...
+    RegularSprite(string filePath, float scale, float scaleYoverride = -1) // ALONB - game screen dimensions should be retrieved every time or just saved? maybe it's a problem because the speed is also based on the screen dimentions and is set far above...
     // ALONB - scale is according to X
     {
         // cout << "Making S " << filePath << "scale: " << scale << "x,y" << dimensions::screenDimentions.x << " " << dimensions::screenDimentions.y << endl;
@@ -94,8 +94,27 @@ public:
 
         // Calculate scale factors
 
-        float desiredWidth = dimensions::activeGameDimentions.x * scale; // Example desired width in pixels
-        float imageScale = desiredWidth / originalSize.x;
+        float imageScale;
+
+        if (scaleYoverride == -1)
+        {
+            float desiredWidth = dimensions::activeGameDimentions.x * scale; // Example desired width in pixels
+            imageScale = desiredWidth / originalSize.x;
+        }
+        else
+        {
+            // cout << dimensions::screenDimentions.y << endl;
+            // cout << scaleYoverride << endl;
+            // cout << originalSize.y << endl;
+            float desiredHeight = dimensions::screenDimentions.y * scaleYoverride; // Example desired width in pixels
+
+            imageScale = desiredHeight / originalSize.y;
+            cout << "D" << endl;
+            cout << imageScale << endl;
+            cout << originalSize.y << endl;
+            cout << (originalSize.y * imageScale) << endl;
+            cout << "S" << endl;
+        }
 
         // sprite.setPosition(500, 500);
         // Create a sprite from the texture
@@ -103,6 +122,12 @@ public:
         sprite.setTexture(texture);
         //  sprite.setPosition(locationPix.x, locationPix.y);
         sprite.setScale(imageScale, imageScale);
+
+        if (scaleYoverride != -1)
+        {
+            cout << "0HEIGHT:" << sprite.getGlobalBounds().height << endl;
+            cout << "WALL:" << dimensions::activeGameYOffset << endl;
+        }
     }
 
     sf::FloatRect getBounds()
@@ -123,6 +148,17 @@ public:
 protected:
     sf::Sprite sprite;
     sf::Texture texture;
+};
+
+class lifeIcon : public RegularSprite
+{
+public:
+    lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, GAME_BOARD_WALL_WIDTH_RATIO * 0.3)
+    // lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, 0.1)
+    {
+        setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
+                    (dimensions::activeGameYOffset - getBounds().height) / 2);
+    }
 };
 
 class MovingSprite : public RegularSprite
