@@ -14,7 +14,7 @@ typedef enum ManagerSm
     MANAGER_SM_COUNT_DOWN = 0,
     MANAGER_SM_GAME,
     MANAGER_SM_COLLISION,
-    MANAGER_SM_SCORE,
+    MANAGER_SM_GAME_OVER,
 } MANAGER_SM_E;
 
 void Manager::Start()
@@ -23,8 +23,8 @@ void Manager::Start()
     int8_t countDown = 3; // STATIC ASERT not bigger than 3
     uint8_t flickers = 4; // STATIC ASSERT even.
     int8_t meduzCountDown = getRandomNumber(5, 7);
-    uint32_t points;
-    uint8_t lives = 5;
+    uint32_t score;
+    int8_t lives = 1;
 
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
 
@@ -48,7 +48,7 @@ void Manager::Start()
                 std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setLives(lives);
                 GameShapes->setActiveGame(lives);
-                points = 0;
+                score = 0;
                 continue;
             }
             this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
@@ -68,6 +68,7 @@ void Manager::Start()
             else
             {
                 GameShapes->createNewShark();
+                cout << "SHARK!" << endl;
 
                 if (meduzCountDown-- <= 0)
                 {
@@ -77,10 +78,10 @@ void Manager::Start()
 
                 GameShapes->cleanUpOldObjects();
 
-                points += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
-                GameShapes->updateScore(to_string(points));
-                // cout << "OUT" << points << endl;
-                // cout << "OUT" << to_string(points) << endl;
+                score += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                GameShapes->updateScore(to_string(score));
+                // cout << "OUT" << score << endl;
+                // cout << "OUT" << to_string(score) << endl;
 
                 // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
@@ -98,10 +99,28 @@ void Manager::Start()
             flickers--;
             if (flickers <= 0)
             {
-                state = MANAGER_SM_GAME;
-                GameShapes->setActiveGame(lives);
+                cout << "LIVES : " << lives << endl;
+                if (lives > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
+                {
+                    GameShapes->setActiveGame(lives);
+                    state = MANAGER_SM_GAME;
+                }
+                else
+                {
+                    // cout << "GAME OVER : " << lives << endl;
+                    GameShapes->gameOver(score, false);
+
+                    state = MANAGER_SM_GAME_OVER;
+                }
                 flickers = 4;
             }
+        }
+        break;
+
+        case MANAGER_SM_GAME_OVER:
+        {
+            // cout << "GAME OVER" << endl;
+            this_thread::sleep_for(chrono::milliseconds(150));
         }
         break;
         }

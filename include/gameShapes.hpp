@@ -21,11 +21,15 @@ private:
     list<unique_ptr<Meduz>> meduzes;
     list<unique_ptr<Bubble>> bubbles;
     list<unique_ptr<sf::RectangleShape>> numCountdown;
-    unique_ptr<GameText> score;
+    unique_ptr<ScoreText> score;
     unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
     list<unique_ptr<RegularSprite>> lives;
+    list<unique_ptr<GeneralText>> gameOverTexts;
 
     uint8_t livesToDraw;
+    uint32_t highScore;
+    bool isGameOver; // Init?
+
     // Draw it
 
     // vector<bubbles> score;
@@ -59,6 +63,8 @@ public:
     void setActiveGame(uint8_t lives);
 
     void setCountDown(uint8_t num);
+
+    void gameOver(uint32_t score, bool isHighScore);
 
     void setLives(uint8_t num);
 
@@ -109,6 +115,10 @@ public:
 
     void checkCollisions();
     bool isCollionWithObsticle() { return isCollisions.first; }
+    bool getIsGameOver()
+    {
+        return isGameOver;
+    }
     void flickerScreen();
     // first is obstible and second is life
 };

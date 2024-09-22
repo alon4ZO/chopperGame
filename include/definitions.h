@@ -2,7 +2,7 @@
 
 #include <random>
 // General
-#define GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS (500)
+#define GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS (100)
 
 // graphics:
 #define GAME_BOARD_PLAYER_X_OFFSET_RATIO (0.1)

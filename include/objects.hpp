@@ -7,6 +7,7 @@
 #include <mutex>
 #include <algorithm>
 
+// ALONB - use a font that renders better than the one i have now, maybe then the hight ratios will work better.
 using namespace std;
 
 class shapeFactory
@@ -22,45 +23,23 @@ public:
     static string getPathForPng(string fileName, string postfix, uint8_t randomOptions = 1);           // Put this with the random num generator in utils tab.
 };
 
-class GameText
+class GeneralText
 {
 public:
     // GameText(scale, xPosition)
-    GameText()
+    GeneralText(string displayString, float charSize, bool isBlink = false)
     {
-
+        isBlink = false;
         string filePath = shapeFactory::getPathForPng("RowsOfSunflowers", ".ttf");
         if (!font.loadFromFile(filePath))
         {
             std::cerr << "Error loading font!" << std::endl;
             return; // Exit if the image fails to load
         }
-        text.setString("");
+        text.setString(displayString);
         text.setFont(font);
-        text.setCharacterSize(dimensions::activeGameYOffset / 2);
+        text.setCharacterSize(charSize);
         text.setFillColor(sf::Color::Red);
-
-        // sf::FloatRect originalSize(text.getGlobalBounds());
-
-        // float desiredHeight = dimensions::activeGameYOffset * 0.5; // Example desired width in pixels
-        // float imageScale = desiredHeight / originalSize.height;
-        // text.setScale(imageScale, imageScale);
-
-        // text.setScale(float factorX, float factorY)
-
-        // text.setPosition(dimensions::activeGameDimentions.x / 2, dimensions::activeGameDimentions.y / 2);
-        text.setPosition(dimensions::screenDimentions.x * 0.9, (dimensions::activeGameYOffset / 4));
-        // text.setPosition(dimensions::screenDimentions.x * 0.8, 0);
-        // set the position of the object
-
-        // void 	setScale (const Vector2f &factors)
-    }
-
-    void updateText(string str)
-    {
-        text.setString(str);
-        auto rect = text.getGlobalBounds();
-        // cout << rect.left << " " << rect.top << " " << rect.width << " " << rect.height << endl;
     }
 
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
@@ -73,9 +52,78 @@ public:
         return text.getGlobalBounds();
     }
 
-private:
+    void setPosition(float xLocation, float yLocation) // 0.9, 0.25
+    {
+        text.setPosition(xLocation, yLocation);
+    }
+
+protected:
     sf::Text text;
     sf::Font font;
+    bool isBlink;
+};
+
+class ScoreText : public GeneralText
+{
+public:
+    ScoreText() : GeneralText("", dimensions::activeGameYOffset / 2)
+    {
+        setPosition(dimensions::screenDimentions.x * 0.9, dimensions::activeGameYOffset * 0.2); // ALONB - CHANGE the positioning to be relative?
+    }
+
+    void updateText(string str)
+    {
+        text.setString(str);
+        auto rect = text.getGlobalBounds();
+    }
+};
+
+class GameOverText : public GeneralText
+{
+public:
+    GameOverText() : GeneralText("Game Over", dimensions::screenDimentions.y / 4)
+    {
+        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, (0));
+    }
+};
+
+class ScoresText : public GeneralText
+{
+private:
+    string synthasizeText(uint32_t currentScore, uint32_t highScore)
+    {
+        if (highScore > currentScore)
+        {
+            return "Good Try! high score is " + to_string(highScore);
+        }
+
+        else if (highScore < currentScore)
+        {
+            return "New high score - " + to_string(highScore) + "!";
+        }
+
+        else
+        {
+            return "Nice, you matched the high score -  " + to_string(highScore);
+        }
+    }
+
+public:
+    ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y / 6)
+    {
+        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition);
+        // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, 500);
+    }
+};
+
+class pressEnterToRestart : public GeneralText
+{
+public:
+    pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4)
+    {
+        // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
+        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);
+    }
 };
 
 class RegularSprite

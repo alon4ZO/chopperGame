@@ -67,7 +67,7 @@ void GameShapes::setActiveGame(uint8_t lives)
     drawablesList.clear(); // ALONB - this clears the score as well, maybe it should stay!
 
     player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO);
-    score = make_unique<GameText>();
+    score = make_unique<ScoreText>();
     scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
 
@@ -86,7 +86,7 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
     // cout << "[screen] - update" << endl;
 
-    drawablesList.clear();
+    drawablesList.clear(); // ALONB - maybe i should have a class of screens, each has it's own set of drawables, blinking drawables
 
     if (score)
     {
@@ -98,6 +98,18 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     {
         // cout << "T" << endl;
         drawablesList.push_back(scoreSign->getDrawable());
+    }
+
+    if (isGameOver)
+    {
+        // cout << gameOverTexts.size() << endl;
+        for (const auto &i : gameOverTexts)
+        {
+            // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+            drawablesList.push_back(i->getDrawable());
+            // cout << "HI" << endl;
+        }
+        return drawablesList;
     }
 
     // auto it = lives.begin();
@@ -363,3 +375,52 @@ void GameShapes::flickerScreen()
     //     blackout.push_back(move(shape));
     // }
 }
+
+void GameShapes::gameOver(uint32_t score, bool isHighScore)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    isGameOver = true;
+    // this->score->updateText(score);
+
+    unique_ptr<GameOverText> gameOverText = make_unique<GameOverText>();
+    unique_ptr<ScoresText> ScoreCountText = make_unique<ScoresText>(gameOverText->getBounds().height * 2, 500, 500);
+    unique_ptr<pressEnterToRestart> pressEnterText = make_unique<pressEnterToRestart>();
+
+    gameOverTexts.push_back(move(gameOverText));
+    gameOverTexts.push_back(move(ScoreCountText));
+    gameOverTexts.push_back(move(pressEnterText));
+
+    // if (blackout.size() == 1)
+    // {
+    //     blackout.pop_back();
+    // }
+    // else
+    // {
+
+    //     unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
+    //     std::lock_guard<std::mutex> lock(_mutex);
+    //     blackout.push_back(move(shape));
+    // }
+}
+
+// collisionDuringCreation = false;
+// unique_ptr<Shark> newShark = make_unique<Shark>(0.08, -0.25);
+
+// // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
+
+// for (const auto &i : sharks)
+// {
+//     // if (i->checkColision(newShark.get()->getBounds()))
+//     if (i->checkColision(newShark->getBounds()))
+//     {
+//         collisionDuringCreation = true;
+//         // cout << "COL" << endl;
+//         break;
+//     }
+// }
+
+// if (!collisionDuringCreation)
+// {
+//     std::lock_guard<std::mutex> lock(_mutex);
+//     sharks.push_back(move(newShark));

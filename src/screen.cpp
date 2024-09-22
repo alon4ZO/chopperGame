@@ -55,6 +55,14 @@ void Screen::Render()
         float deltaTime = clock.restart().asSeconds();
         window.clear(sf::Color::Black);
 
+        if (gameShapes->getIsGameOver())
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                cout << "ENTER" << endl;
+            }
+        }
+
         if (!gameShapes->isCollionWithObsticle())
         {
             gameShapes->checkCollisions();
