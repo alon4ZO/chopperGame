@@ -6,8 +6,34 @@
 #include <list>
 #include <mutex>
 #include <algorithm>
+#include <future>
 
 using namespace std;
+
+class AsyncSignal
+{
+private:
+    // std::mutex _SignalMutex; // Define the mutex
+    std::promise<bool> promiseObj;
+    std::future<bool> futureObj;
+
+public:
+    AsyncSignal()
+    {
+        futureObj = promiseObj.get_future();
+    }
+
+    void send()
+    {
+        promiseObj.set_value(true);
+    }
+
+    bool recieve(uint32_t timeInMs)
+    {
+        auto timeoutDuration = std::chrono::milliseconds(850);
+        return (futureObj.wait_for(timeoutDuration) == std::future_status::ready);
+    }
+};
 
 class GameShapes
 {
@@ -15,6 +41,7 @@ private:
     static unique_ptr<GameShapes> instance;
 
     uint32_t blackout;
+    bool isBlink;
 
     unique_ptr<Player> player;
     list<unique_ptr<Shark>> sharks;
@@ -40,8 +67,6 @@ private:
 
     pair<bool, bool> isCollisions;
 
-    void clearAll();
-
     void createObsticle(uint32_t xPos, uint32_t boardHeight, uint32_t wallThickness, uint32_t spacing);
     // unique_ptr<sf::Shape> shapeFactory();
 
@@ -51,15 +76,19 @@ private:
     }
 
 public:
+    unique_ptr<AsyncSignal> asyncSignal;
     // GameShapes(uint32_t x, uint32_t y);
     GameShapes() { blackout = false; }
     GameShapes operator=(GameShapes &) = delete;
     GameShapes(GameShapes &) = delete;
     static GameShapes *getGameShapes();
 
+    void resetAsyncSignal();
+
     std::mutex _mutex; // Define the mutex
 
     // void clearAll(); // ALONB - make all these list part of a vector for safer cleaning.
+    void clearAll();
     void setActiveGame(uint8_t lives);
 
     void setCountDown(uint8_t num);
@@ -122,6 +151,8 @@ public:
         return isGameOver;
     }
     void flickerScreen();
+    void blink();
+
     // first is obstible and second is life
 };
 

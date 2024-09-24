@@ -105,9 +105,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
         // cout << gameOverTexts.size() << endl;
         for (const auto &i : gameOverTexts)
         {
-            // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-            drawablesList.push_back(i->getDrawable());
-            // cout << "HI" << endl;
+            // cout << std::boolalpha << isBlink << endl;
+            // if (!i->getIsBlink())
+            if (!i->getIsBlink() || (i->getIsBlink() && !isBlink))
+            {
+                drawablesList.push_back(i->getDrawable());
+            }
         }
         return drawablesList;
     }
@@ -362,18 +365,13 @@ void GameShapes::flickerScreen()
     std::lock_guard<std::mutex> lock(_mutex);
 
     blackout = blackout ? false : true;
+}
 
-    // if (blackout.size() == 1)
-    // {
-    //     blackout.pop_back();
-    // }
-    // else
-    // {
+void GameShapes::blink()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
 
-    //     unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
-    //     std::lock_guard<std::mutex> lock(_mutex);
-    //     blackout.push_back(move(shape));
-    // }
+    isBlink = isBlink ? false : true;
 }
 
 void GameShapes::gameOver(uint32_t score, bool isHighScore)
@@ -411,23 +409,12 @@ void GameShapes::resetGameOver()
     isGameOver = false;
 }
 
-// collisionDuringCreation = false;
-// unique_ptr<Shark> newShark = make_unique<Shark>(0.08, -0.25);
-
-// // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
-
-// for (const auto &i : sharks)
+// void GameShapes::resetAsyncSignal()
 // {
-//     // if (i->checkColision(newShark.get()->getBounds()))
-//     if (i->checkColision(newShark->getBounds()))
-//     {
-//         collisionDuringCreation = true;
-//         // cout << "COL" << endl;
-//         break;
-//     }
+//     // std::lock_guard<std::mutex> lock(_mutex);
+
+//     std::promise<bool> promiseObj = make_unique<>;
+//     std::future<bool> futureObj = promiseObj.get_future();
+
+//     isGameOver = false;
 // }
-
-// if (!collisionDuringCreation)
-// {
-//     std::lock_guard<std::mutex> lock(_mutex);
-//     sharks.push_back(move(newShark));

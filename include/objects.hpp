@@ -29,7 +29,7 @@ public:
     // GameText(scale, xPosition)
     GeneralText(string displayString, float charSize, bool isBlink = false)
     {
-        isBlink = false;
+        this->isBlink = isBlink;
         string filePath = shapeFactory::getPathForPng("RowsOfSunflowers", ".ttf");
         if (!font.loadFromFile(filePath))
         {
@@ -50,6 +50,11 @@ public:
     sf::FloatRect getBounds()
     {
         return text.getGlobalBounds();
+    }
+
+    bool getIsBlink()
+    {
+        return isBlink;
     }
 
     void setPosition(float xLocation, float yLocation) // 0.9, 0.25
@@ -119,7 +124,7 @@ public:
 class pressEnterToRestart : public GeneralText
 {
 public:
-    pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4)
+    pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4, true)
     {
         // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
         setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);

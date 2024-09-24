@@ -12,7 +12,8 @@ using namespace std::literals;
 
 typedef enum ManagerSm
 {
-    MANAGER_SM_COUNT_DOWN = 0,
+    MANAGER_SM_RESET = 0,
+    MANAGER_SM_COUNT_DOWN,
     MANAGER_SM_GAME,
     MANAGER_SM_COLLISION,
     MANAGER_SM_GAME_OVER,
@@ -21,12 +22,12 @@ typedef enum ManagerSm
 
 void Manager::Start(std::future<bool> &&futureObj)
 {
-    MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
-    int8_t countDown = 3;  // STATIC ASERT not bigger than 3
-    uint8_t flickers = 16; // STATIC ASSERT even. //4
-    int8_t meduzCountDown = getRandomNumber(5, 7);
+    MANAGER_SM_E state = MANAGER_SM_RESET;
+    int8_t countDown; // STATIC ASERT not bigger than 3
+    uint8_t flickers; // STATIC ASSERT even. //4
+    int8_t meduzCountDown;
     uint32_t score;
-    int8_t lives = 1;
+    int8_t lives;
 
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
 
@@ -37,6 +38,21 @@ void Manager::Start(std::future<bool> &&futureObj)
 
         switch (state)
         {
+
+        case MANAGER_SM_RESET:
+        {
+            std::cout << "[Manager] - reseting " << std::endl;
+
+            countDown = 3; // STATIC ASERT not bigger than 3
+            flickers = 4;  // STATIC ASSERT even. //4
+            meduzCountDown = getRandomNumber(5, 7);
+            score = 0;
+            lives = 3;
+            GameShapes->clearAll();
+            state = MANAGER_SM_COUNT_DOWN;
+        }
+        break;
+
         case MANAGER_SM_COUNT_DOWN:
         {
             std::cout << "[Manager] - counting down - " << static_cast<uint32_t>(countDown) << std::endl;
@@ -50,7 +66,6 @@ void Manager::Start(std::future<bool> &&futureObj)
                 std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setLives(lives);
                 GameShapes->setActiveGame(lives);
-                score = 0;
                 continue;
             }
             this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
@@ -112,6 +127,13 @@ void Manager::Start(std::future<bool> &&futureObj)
                     // cout << "GAME OVER : " << lives << endl;
                     GameShapes->gameOver(score, false);
 
+                    // reset the future and promise, update
+                    // auto newptr = make_unique<AsyncSignal>();
+                    // GameShapes->asyncSignal = move(newptr);
+                    GameShapes->asyncSignal.reset(new AsyncSignal());
+                    // GameShapes->asyncSignal.reset(move(make_unique<AsyncSignal>()));
+                    GameShapes->clearAll();
+
                     state = MANAGER_SM_GAME_OVER;
                 }
                 flickers = 4;
@@ -123,25 +145,17 @@ void Manager::Start(std::future<bool> &&futureObj)
         {
             // cout << "GAME OVER" << endl;
 
-            auto timeoutDuration = std::chrono::seconds(3);
-
-            // Wait for the result or timeout
-            if (futureObj.wait_for(timeoutDuration) == std::future_status::ready)
+            // GameShapes->blink();
+            if (GameShapes->asyncSignal->recieve(500))
             {
-                // If the future is ready within the timeout, retrieve the result
-                bool result = futureObj.get();
-                std::cout << "Received data: " << std::endl;
-                state = MANAGER_SM_ERROR; // New game
+                state = MANAGER_SM_RESET;
             }
             else
             {
-                // If the future is not ready within the timeout, handle timeout
-                std::cout << "Operation timed out!" << std::endl;
+                GameShapes->blink();
             }
-
-            // std::this_thread::sleep_for(std::chrono::seconds(2));
-            // this_thread::sleep_for(chrono::milliseconds(150));
         }
+        break;
 
         case MANAGER_SM_ERROR:
         {

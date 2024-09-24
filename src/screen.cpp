@@ -60,7 +60,8 @@ void Screen::Render(std::promise<bool> &&promise)
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 cout << "ENTER" << endl;
-                promise.set_value(true);
+                // promise.set_value(true);
+                gameShapes->asyncSignal->send();
                 gameShapes->resetGameOver();
             }
         }
