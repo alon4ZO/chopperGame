@@ -3,6 +3,7 @@
 #include <definitions.h>
 #include <memory>
 #include <list>
+#include <future>
 
 class Manager // ALONB Add static variable to make sure 1 initialization?
 {
@@ -15,5 +16,5 @@ public:
     Manager(uint32_t score = MANAGER_INITIAL_SCORE,
             uint32_t speed = MANAGER_INITIAL_OBSTICLE_SPEED_PIX_PER_SEC,
             uint32_t maxObsticlesPerSecond = MANAGER_INITIAL_SHARKS_PER_SEC) {}; // ALONB MANAGER_INITIAL_SHARKS_PER_SECis here 2 times
-    void Start();
+    void Start(std::future<bool> &&futureObj);
 };

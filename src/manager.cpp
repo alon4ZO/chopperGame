@@ -5,6 +5,7 @@
 #include <manager.hpp>
 #include <thread>
 #include <chrono>
+#include <future>
 
 using namespace std;
 using namespace std::literals;
@@ -15,13 +16,14 @@ typedef enum ManagerSm
     MANAGER_SM_GAME,
     MANAGER_SM_COLLISION,
     MANAGER_SM_GAME_OVER,
+    MANAGER_SM_ERROR
 } MANAGER_SM_E;
 
-void Manager::Start()
+void Manager::Start(std::future<bool> &&futureObj)
 {
     MANAGER_SM_E state = MANAGER_SM_COUNT_DOWN;
-    int8_t countDown = 3; // STATIC ASERT not bigger than 3
-    uint8_t flickers = 4; // STATIC ASSERT even.
+    int8_t countDown = 3;  // STATIC ASERT not bigger than 3
+    uint8_t flickers = 16; // STATIC ASSERT even. //4
     int8_t meduzCountDown = getRandomNumber(5, 7);
     uint32_t score;
     int8_t lives = 1;
@@ -120,7 +122,31 @@ void Manager::Start()
         case MANAGER_SM_GAME_OVER:
         {
             // cout << "GAME OVER" << endl;
-            this_thread::sleep_for(chrono::milliseconds(150));
+
+            auto timeoutDuration = std::chrono::seconds(3);
+
+            // Wait for the result or timeout
+            if (futureObj.wait_for(timeoutDuration) == std::future_status::ready)
+            {
+                // If the future is ready within the timeout, retrieve the result
+                bool result = futureObj.get();
+                std::cout << "Received data: " << std::endl;
+                state = MANAGER_SM_ERROR; // New game
+            }
+            else
+            {
+                // If the future is not ready within the timeout, handle timeout
+                std::cout << "Operation timed out!" << std::endl;
+            }
+
+            // std::this_thread::sleep_for(std::chrono::seconds(2));
+            // this_thread::sleep_for(chrono::milliseconds(150));
+        }
+
+        case MANAGER_SM_ERROR:
+        {
+            std::cout << "ERROR" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         break;
         }

@@ -3,6 +3,7 @@
 #include <definitions.h>
 #include <memory>
 #include <gameShapes.hpp>
+#include <future>
 
 using namespace std;
 
@@ -16,5 +17,5 @@ private:
 
 public:
     Screen(float ratio = GAME_BOARD_RATIO);
-    void Render();
+    void Render(std::promise<bool> &&promise);
 };

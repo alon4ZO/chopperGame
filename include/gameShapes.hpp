@@ -66,6 +66,8 @@ public:
 
     void gameOver(uint32_t score, bool isHighScore);
 
+    void resetGameOver();
+
     void setLives(uint8_t num);
 
     void setGameScreenDimensions(uint32_t x, uint32_t y)

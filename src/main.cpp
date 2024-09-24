@@ -8,6 +8,7 @@
 #include <manager.hpp>
 #include <thread>
 #include <chrono>
+#include <future>
 
 using namespace std;
 
@@ -20,12 +21,13 @@ int main()
 
     // GameShapes gameShapes(screen->getscreenDimentions.x(), screen->getscreenDimentions.y());
 
+    std::promise<bool> promiseObj;
+    std::future<bool> futureObj = promiseObj.get_future();
     // Directly use the threadPrint function
-    thread threadManager([&manager]()
-                         { manager.Start(); });
+    std::thread threadManager(&Manager::Start, &manager, move(futureObj)); // ALONB - I don't understand this synthax. it doesn't fit any constructor of thread.
 
     // Join threads to ensure they complete before exiting
-    screen.Render();
+    screen.Render(move(promiseObj));
     threadManager.join();
 
     return 0;

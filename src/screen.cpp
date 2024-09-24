@@ -33,7 +33,7 @@ Screen::Screen(float ratio)
     gameShapes->setGameScreenDimensions(gameXDim, gameYDim);
 }
 
-void Screen::Render()
+void Screen::Render(std::promise<bool> &&promise)
 {
     GameShapes *gameShapes = GameShapes::getGameShapes();
     pair<float, float> playerSteps;
@@ -60,6 +60,8 @@ void Screen::Render()
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 cout << "ENTER" << endl;
+                promise.set_value(true);
+                gameShapes->resetGameOver();
             }
         }
 

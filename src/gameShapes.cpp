@@ -404,6 +404,13 @@ void GameShapes::gameOver(uint32_t score, bool isHighScore)
     // }
 }
 
+void GameShapes::resetGameOver()
+{
+    // std::lock_guard<std::mutex> lock(_mutex);
+
+    isGameOver = false;
+}
+
 // collisionDuringCreation = false;
 // unique_ptr<Shark> newShark = make_unique<Shark>(0.08, -0.25);
 
