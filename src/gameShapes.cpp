@@ -66,7 +66,7 @@ void GameShapes::setActiveGame(uint8_t lives)
     std::lock_guard<std::mutex> lock(_mutex);
     drawablesList.clear(); // ALONB - this clears the score as well, maybe it should stay!
 
-    player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO);
+    player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO, GAME_BOARD_PLAYER_X_SIZE_RATIO * 0.1);
     score = make_unique<ScoreText>();
     scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);

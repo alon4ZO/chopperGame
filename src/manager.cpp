@@ -25,7 +25,7 @@ void Manager::Start(std::future<bool> &&futureObj)
     MANAGER_SM_E state = MANAGER_SM_RESET;
     int8_t countDown; // STATIC ASERT not bigger than 3
     uint8_t flickers; // STATIC ASSERT even. //4
-    int8_t meduzCountDown;
+    int16_t meduzCountDown;
     uint32_t score;
     int8_t lives;
 
@@ -45,7 +45,7 @@ void Manager::Start(std::future<bool> &&futureObj)
 
             countDown = 3; // STATIC ASERT not bigger than 3
             flickers = 4;  // STATIC ASSERT even. //4
-            meduzCountDown = getRandomNumber(5, 7);
+            meduzCountDown = getRandomNumber(5000, 50000);
             score = 0;
             lives = 3;
             GameShapes->clearAll();
@@ -90,7 +90,7 @@ void Manager::Start(std::future<bool> &&futureObj)
                 if (meduzCountDown-- <= 0)
                 {
                     GameShapes->createNewMeduz();
-                    meduzCountDown = getRandomNumber(1, 2);
+                    meduzCountDown = getRandomNumber(5000, 6000);
                 }
 
                 GameShapes->cleanUpOldObjects();
@@ -166,20 +166,3 @@ void Manager::Start(std::future<bool> &&futureObj)
         }
     }
 }
-
-// Move all obsitcles to the left according to time passed and speed.
-// for (auto &i : obsticals) This needs to be from Render
-// {
-//     i->move(-speed * dt, 0.0f);
-// }
-
-// // if last obsticle is advanced enough, introduce a new obsitcle.
-// auto &newestObsticle = obsticals.back();
-// sf::Vector2f positionOfNewestObsticle = newestObsticle->getPosition();
-
-// if (positionOfNewestObsticle.x < screenDimentions.x - spacing)
-// {
-//     unique_ptr<sf::Shape> obsticle = shapeFactory::createObsticle(screenDimentions.x, screenDimentions.y, wallThickness, spacing);
-//     obsticals.push_back(move(obsticle));
-//     return;
-// }

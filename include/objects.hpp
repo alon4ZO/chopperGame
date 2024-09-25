@@ -9,6 +9,7 @@
 
 // ALONB - use a font that renders better than the one i have now, maybe then the hight ratios will work better.
 using namespace std;
+using namespace std::literals;
 
 class shapeFactory
 {
@@ -277,38 +278,83 @@ public:
 
 class Player : public MovingSprite
 {
+private:
+    float currentXSpeed;
+    float currentYSpeed;
+    float accelarationX;
+    float accelarationY;
+
 public:
-    Player(float scale);
+    Player(float scale, float accelarationFactor);
     void advance(float dt, int8_t x = 1, int8_t y = 1)
     {
-
-        float dx = dt * speedPixPerSecond.x * x; // ALONB - this turns out to be a bit wasteful...
-        float dy = dt * speedPixPerSecond.y * y;
-
-        // This has to be calculated with the post move, otherwise it gets stuck!
-        sf::FloatRect screenRect(this->getBounds().width, dimensions::activeGameYOffset + this->getBounds().height, dimensions::activeGameDimentions.x - 2 * this->getBounds().width, dimensions::activeGameDimentions.y - 2 * this->getBounds().height);
-
-        dx = dt * speedPixPerSecond.x * x;
-        dy = 0;
+        // cout << currentXSpeed << endl;
+        // cout << "[x,y]" << (uint32_t)x << " " << (uint32_t)y << endl;
+        accelarationX = 4000 * dt;
+        accelarationY = 3000 * dt / 1.6;
+        if (x == 1)
         {
+            currentXSpeed = min(currentXSpeed + accelarationX, speedPixPerSecond.x);
+        }
 
-            sf::FloatRect playerPostMoveRect(this->getBounds().left + dx, this->getBounds().top + dy, this->getBounds().width, this->getBounds().height);
+        else if (x == -1)
+        {
+            currentXSpeed = max(currentXSpeed - accelarationX, -speedPixPerSecond.x);
+        }
 
-            if (screenRect.intersects(playerPostMoveRect))
+        else if (x == 0)
+        {
+            if (currentXSpeed > 0)
             {
-                sprite.move(dx, 0);
+                currentXSpeed = max(currentXSpeed - accelarationX, 0.0f);
+            }
+            else if (currentXSpeed < 0)
+            {
+                currentXSpeed = min(currentXSpeed + accelarationX, 0.0f);
             }
         }
 
-        dx = 0;
-        dy = dt * speedPixPerSecond.y * y;
+        if (y == 1)
         {
-            sf::FloatRect playerPostMoveRect(this->getBounds().left + dx, this->getBounds().top + dy, this->getBounds().width, this->getBounds().height);
+            currentYSpeed = min(currentYSpeed + accelarationY, speedPixPerSecond.y);
+        }
 
-            if (screenRect.intersects(playerPostMoveRect))
+        else if (y == -1)
+        {
+            currentYSpeed = max(currentYSpeed - accelarationY, -speedPixPerSecond.y);
+        }
+
+        else if (y == 0)
+        {
+            if (currentYSpeed > 0)
             {
-                sprite.move(0, dy);
+                currentYSpeed = max(currentYSpeed - accelarationY, 0.0f);
+            }
+            else if (currentYSpeed < 0)
+            {
+                currentYSpeed = min(currentYSpeed + accelarationY, 0.0f);
             }
         }
+
+        float dx = dt * currentXSpeed;
+        float dy = dt * currentYSpeed;
+
+        float actualX = clamp(this->getBounds().left + dx,
+                              0.0f,
+                              dimensions::activeGameDimentions.x - this->getBounds().width);
+
+        if (actualX == 0.0f || actualX == dimensions::activeGameDimentions.x - this->getBounds().width)
+        {
+            currentXSpeed = 0;
+        }
+        float actualY = clamp(this->getBounds().top + dy,
+                              static_cast<float>(dimensions::activeGameYOffset),
+                              dimensions::screenDimentions.y - this->getBounds().height);
+
+        if (actualY == static_cast<float>(dimensions::activeGameYOffset) || actualY == dimensions::screenDimentions.y - this->getBounds().height)
+        {
+            currentYSpeed = 0;
+        }
+        sprite.setPosition(actualX, actualY);
     }
 };

@@ -60,8 +60,12 @@ Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPat
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
 Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble", ".png"), scale, {0, verticleSpeed}) {};
-Player::Player(float scale) : MovingSprite(shapeFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player(float scale, float accelarationFactor) : MovingSprite(shapeFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
+    currentXSpeed = 0;
+    currentYSpeed = 0;
+    accelarationX = GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * accelarationFactor;
+    accelarationY = GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC * accelarationFactor;
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
