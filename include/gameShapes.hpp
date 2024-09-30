@@ -52,10 +52,14 @@ private:
     unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
     list<unique_ptr<RegularSprite>> lives;
     list<unique_ptr<GeneralText>> gameOverTexts;
+    list<unique_ptr<Prize>> prizes;
 
     uint8_t livesToDraw;
     uint32_t highScore;
     bool isGameOver; // Init?
+
+    float TimeUntilBubble;
+    float nextTimeUntilBubble;
 
     // Draw it
 
@@ -74,11 +78,16 @@ private:
     {
         return max(minVal, min(maxVal, value));
     }
+    void createNewBubble(float scale);
 
 public:
     unique_ptr<AsyncSignal> asyncSignal;
     // GameShapes(uint32_t x, uint32_t y);
-    GameShapes() { blackout = false; }
+    GameShapes()
+    {
+        blackout = false;
+        // TimeUntilBubble = 1.0f;
+    }
     GameShapes operator=(GameShapes &) = delete;
     GameShapes(GameShapes &) = delete;
     static GameShapes *getGameShapes();
@@ -126,6 +135,7 @@ public:
 
     void createNewShark();
     void createNewMeduz();
+    void createNewPrize();
     void cleanUpOldObjects();
     void moveChopper(pair<float, float> direction) // ALONB - move this from here.
     {

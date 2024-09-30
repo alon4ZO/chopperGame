@@ -26,6 +26,7 @@ void Manager::Start(std::future<bool> &&futureObj)
     int8_t countDown; // STATIC ASERT not bigger than 3
     uint8_t flickers; // STATIC ASSERT even. //4
     int16_t meduzCountDown;
+    int16_t prizeCountDown;
     uint32_t score;
     int8_t lives;
 
@@ -46,6 +47,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             countDown = 3; // STATIC ASERT not bigger than 3
             flickers = 4;  // STATIC ASSERT even. //4
             meduzCountDown = getRandomNumber(5000, 50000);
+            prizeCountDown = getRandomNumber(1, 2);
             score = 0;
             lives = 3;
             GameShapes->clearAll();
@@ -85,7 +87,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             else
             {
                 GameShapes->createNewShark();
-                cout << "SHARK!" << endl;
+                // cout << "SHARK!" << endl;
 
                 if (meduzCountDown-- <= 0)
                 {
@@ -93,14 +95,17 @@ void Manager::Start(std::future<bool> &&futureObj)
                     meduzCountDown = getRandomNumber(5000, 6000);
                 }
 
+                if (prizeCountDown-- <= 0)
+                {
+                    GameShapes->createNewPrize();
+                    // prizeCountDown = getRandomNumber(1, 2);
+                    prizeCountDown = 1000;
+                }
+
                 GameShapes->cleanUpOldObjects();
 
-                score += (10 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                score += (10);
                 GameShapes->updateScore(to_string(score));
-                // cout << "OUT" << score << endl;
-                // cout << "OUT" << to_string(score) << endl;
-
-                // cout << "Num of obsticles is: " << GameShapes->getobsticals().size() << endl;
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
             }
         }

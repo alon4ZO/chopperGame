@@ -59,9 +59,27 @@ Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPat
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(float scale, float verticleSpeed) : MovingSprite(shapeFactory::getPathForPng("bubble", ".png"), scale, {0, verticleSpeed}) {};
+Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(shapeFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
+{
+    setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
+};
+
+Prize::Prize() : RegularSprite(shapeFactory::getPathForPng("prize", ".png"), 0.05)
+{
+    // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
+    setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
+                getRandomNumber(dimensions::activeGameYOffset, static_cast<uint32_t>(dimensions::activeGameDimentions.y - getBounds().height)));
+
+    yMid = getBounds().top;
+    yDelta = 0.025;
+    timeBeforeFadingSec = 1;
+    fadeTimeInSec = 5;
+    fading = false;
+}
+
 Player::Player(float scale, float accelarationFactor) : MovingSprite(shapeFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
+    // ALONB - some of the input params should just be private and don't need to come from the outside.
     currentXSpeed = 0;
     currentYSpeed = 0;
     accelarationX = GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * accelarationFactor;

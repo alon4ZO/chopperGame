@@ -132,6 +132,26 @@ public:
     }
 };
 
+// class Fade
+// {
+// private:
+//     uint8_t initialAlpha;
+//     uint8_t fadeSpeedAlphaPerSec;
+
+// public:
+//     Fade() : initialAlpha(255) {};
+//     void fadeStep(dt)
+//     {
+
+//     }
+
+//         void
+//         getAlpha()
+//     {
+//         return initialAlpha;
+//     }
+// };
+
 class RegularSprite
 {
 public:
@@ -172,7 +192,7 @@ public:
 
         // sprite.setPosition(500, 500);
         // Create a sprite from the texture
-        // cout << "imageScale " << imageScale << endl;
+        setAlpha(255);
         sprite.setTexture(texture);
         //  sprite.setPosition(locationPix.x, locationPix.y);
         sprite.setScale(imageScale, imageScale);
@@ -192,6 +212,28 @@ public:
     void setLocation(float x, float y) // This is not really needed no?
     {
         sprite.setPosition(x, y);
+    }
+
+    bool checkColision(sf::FloatRect rectangle)
+    {
+        return this->getBounds().intersects(rectangle);
+    }
+
+    void setAlpha(uint8_t alpha) // NO NEED THESE 2?
+    {
+        sprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(alpha)));
+        // cout << "FADING" << endl;
+        // cout << (uint32_t)alpha << endl;
+    }
+
+    uint8_t getAlpha()
+    {
+        return sprite.getColor().a;
+    }
+
+    void fade(uint8_t units)
+    {
+        setAlpha(getAlpha() - units);
     }
 
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
@@ -236,10 +278,6 @@ private:
 public:
     ~Obsticle() {}
     Obsticle(string filePath, float scale, sf::Vector2f speed) : MovingSprite(filePath, scale, speed) {} // ALONB - optimize
-    bool checkColision(sf::FloatRect rectangle)
-    {
-        return this->getBounds().intersects(rectangle);
-    }
 };
 
 class Meduz : public Obsticle
@@ -269,11 +307,75 @@ public:
     }
 };
 
+class Prize : public RegularSprite
+{
+private:
+    float fadeSpeedAlphaPerSec = 60;
+    float alpha = 255;
+    float yMid;
+    float yDelta = 200;
+    float max = 0;
+    float min = 0;
+    float timeBeforeFadingSec;
+    float fadeTimeInSec;
+    float fadeTimeConst; // ALONB - make this const
+    bool fading;
+    bool canReleaseFlag = false;
+
+public:
+    Prize();
+    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    {
+        // fade
+        if (!fading)
+        {
+            timeBeforeFadingSec -= dt;
+            if (timeBeforeFadingSec < 0)
+            {
+                cout << "START FADE" << endl;
+                fadeTimeConst = fadeTimeInSec;
+                fading = true;
+            }
+        }
+
+        else if (!canReleaseFlag)
+        {
+            alpha = (fadeTimeInSec / fadeTimeConst) * 255;
+            setAlpha(alpha);
+            fadeTimeInSec -= dt;
+
+            if (fadeTimeInSec < 0)
+            {
+                canReleaseFlag = true;
+            }
+        }
+
+        // move
+        yDelta += (yMid - getBounds().top) * dt * 0.003;
+        // cout << yDelta << endl;
+
+        if ((getBounds().top < yMid) && (getBounds().top + yDelta >= yMid))
+        {
+            // Fix so that the boyancy movement stays in ranges.
+            yDelta = 0.015;
+        }
+        sprite.move(0, yDelta);
+    }
+
+    bool canRelease()
+    {
+        return canReleaseFlag;
+    }
+};
+
 class Bubble : public MovingSprite
 {
 public:
-    Bubble(float scale, float verticleSpeed);
-    void advance(float dt, int8_t x = 1, int8_t y = 1) {} // add some sideways motion as well?
+    Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect);
+    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    {
+        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+    } // add some sideways motion as well?
 };
 
 class Player : public MovingSprite

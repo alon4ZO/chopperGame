@@ -11,23 +11,6 @@ using namespace std;
 
 unique_ptr<GameShapes> GameShapes::instance = nullptr;
 
-// class dimensions
-// { // ALONB -make this class a bit smarter, getters, setters, etc, check init, etc..
-// public:
-//     static sf::Vector2u screenDimentions;
-//     static sf::Vector2u activeGameDimentions;
-//     static uint32_t activeGameYOffset;
-// };
-// Definition of static members outside the class
-
-// GameShapes::GameShapes()
-// {
-//     moveablesList.push_back(static_player);
-//     moveablesList.push_back(sharks);
-//     moveablesList.push_back(meduzes);
-//     moveablesList.push_back(bubbles);
-// }
-
 GameShapes *GameShapes::getGameShapes()
 {
     if (instance == nullptr)
@@ -146,6 +129,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 
     // drawablesList.push_back(it->getDrawable()); // ALONB - use a shared pointer instead?
 
+    for (const auto &i : bubbles)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+    }
+
     if (player)
     {
         // cout << "T" << endl;
@@ -156,6 +145,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     {
         // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
         drawablesList.push_back(i.get()); // ALONB - use a shared pointer instead?
+    }
+
+    for (const auto &i : prizes)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
     }
 
     for (const auto &i : sharks)
@@ -204,12 +199,48 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
     {
         i->advance(dt);
     }
+    for (auto &i : bubbles)
+    {
+        i->advance(dt);
+    }
+    for (auto &i : prizes)
+    {
+        i->advance(dt);
+    }
 
     if (player)
     {
         player->advance(dt, playerSteps.first, playerSteps.second);
     }
+
+    // check if need to create a bubble:
+
+    if ((playerSteps.first == 0) && (playerSteps.second == 0))
+    {
+        nextTimeUntilBubble = 0.01;
+        TimeUntilBubble = nextTimeUntilBubble;
+    }
+    else
+    {
+        TimeUntilBubble -= dt;
+        if (TimeUntilBubble < 0)
+        {
+            nextTimeUntilBubble = min(nextTimeUntilBubble * 1.8f, 1.0f);
+            TimeUntilBubble = nextTimeUntilBubble;
+            // float scale = 1 - ((nextTimeUntilBubble - 0.01) / (1.0f - 0.01));
+            float scale = 1;
+            createNewBubble(scale); // ALONB - do I want different scales?
+        }
+    }
 };
+
+void GameShapes::createNewBubble(float scale)
+{
+    // cout << scale << endl;
+    unique_ptr<Bubble> newBubble = make_unique<Bubble>(0.8 * scale, -0.5, player->getBounds());
+    bubbles.push_back(move(newBubble));
+    // cout << bubbles.size() << endl;
+}
 
 void GameShapes::updateScore(string score)
 {
@@ -284,6 +315,49 @@ void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
     } while (collisionDuringCreation);
 }
 
+void GameShapes::createNewPrize()
+{
+
+    bool collisionDuringCreation;
+    do
+    {
+        collisionDuringCreation = false;
+        unique_ptr<Prize> newPrize = make_unique<Prize>();
+
+        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
+
+        for (const auto &i : prizes)
+        {
+            // if (i->checkColision(newShark.get()->getBounds()))
+            if (i->checkColision(newPrize->getBounds()))
+            {
+                collisionDuringCreation = true;
+                // cout << "COL" << endl;
+                break;
+            }
+        }
+
+        // ALONB this can also be for sharks, meduz, doesn't have to - optional
+        sf::FloatRect playerClearenceArea(player->getBounds().left - player->getBounds().width,
+                                          player->getBounds().top - player->getBounds().height,
+                                          player->getBounds().width * 3,
+                                          player->getBounds().height * 3);
+
+        if (newPrize->checkColision(playerClearenceArea))
+        {
+            collisionDuringCreation = true;
+        }
+
+        if (!collisionDuringCreation)
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            prizes.push_back(move(newPrize));
+            // cout << "SOL" << endl;
+        }
+    } while (collisionDuringCreation);
+}
+// ALONB the meduzes can collide?
+
 void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and there should be an easily accessible list of movables.
 {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -292,8 +366,6 @@ void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and
 
     sf::FloatRect screenRect{0 - static_cast<float>(100), dimensions::activeGameYOffset - static_cast<float>(100), dimensions::activeGameDimentions.x + static_cast<float>(200), dimensions::activeGameDimentions.y + static_cast<float>(200)};
 
-    // cout << sharks.size() << endl;
-    // cout << "M" << meduzes.size() << endl;
     while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
     {
         sharks.pop_front();
@@ -304,6 +376,18 @@ void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and
     {
         meduzes.pop_front();
         // cout << "POPm" << endl;
+    }
+
+    while ((bubbles.size() > 0) && (!bubbles.front().get()->checkColision(screenRect)))
+    {
+        bubbles.pop_front();
+        // cout << "POPm" << endl;
+    }
+
+    while ((prizes.size() > 0) && (prizes.front().get()->canRelease()))
+    {
+        cout << "POP prize" << endl;
+        prizes.pop_front();
     }
 
     // ALONB - assert that the sizes do not explode?
@@ -332,14 +416,19 @@ void GameShapes::checkCollisions()
         }
     }
 
-    // for (auto &i : obsticals)
-    // {
-    //     if (chopper.front()->getGlobalBounds().intersects(i->getGlobalBounds()))
-    //     {
-    //         isCollisions.first = true;
-    //         return; // ALONB - add extra life.
-    //     }
-    // }
+    for (auto itt = prizes.begin(); itt != prizes.end();)
+    {
+        if (itt->get()->checkColision(player->getBounds()))
+        {
+            prizes.erase(itt);
+            cout << "Prize" << endl;
+            break;
+        }
+        else
+        {
+            itt++;
+        }
+    }
 }
 
 void GameShapes::setLives(uint8_t num)
