@@ -3,12 +3,15 @@
 #include <screen.hpp>
 #include <gameShapes.hpp>
 #include <manager.hpp>
+#include <dB.hpp>
 #include <thread>
 #include <chrono>
 #include <future>
 
 using namespace std;
 using namespace std::literals;
+
+unique_ptr<dB> dB::instance = nullptr;
 
 typedef enum ManagerSm
 {
@@ -27,10 +30,9 @@ void Manager::Start(std::future<bool> &&futureObj)
     uint8_t flickers; // STATIC ASSERT even. //4
     int16_t meduzCountDown;
     int16_t prizeCountDown;
-    uint32_t score;
-    int8_t lives;
 
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
+    dB *dB = dB::getDB();
 
     // GameShapes->setActiveGame();
     while (1)
@@ -48,8 +50,9 @@ void Manager::Start(std::future<bool> &&futureObj)
             flickers = 4;  // STATIC ASSERT even. //4
             meduzCountDown = getRandomNumber(5000, 50000);
             prizeCountDown = getRandomNumber(1, 2);
-            score = 0;
-            lives = 3;
+            dB->setScore(0);
+            dB->setLives(3);
+
             GameShapes->clearAll();
             state = MANAGER_SM_COUNT_DOWN;
         }
@@ -66,8 +69,8 @@ void Manager::Start(std::future<bool> &&futureObj)
             {
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
-                GameShapes->setLives(lives);
-                GameShapes->setActiveGame(lives);
+                GameShapes->setLives(dB->getLives()); // If using the DB, in both cases don't need to send the lives.
+                GameShapes->setActiveGame(dB->getLives());
                 continue;
             }
             this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
@@ -80,7 +83,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             // std::cout << "[Manager] - New shape" << std::endl;
             if (GameShapes->isCollionWithObsticle())
             {
-                lives--;
+                dB->decLives();
                 state = MANAGER_SM_COLLISION;
                 // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
             }
@@ -104,8 +107,8 @@ void Manager::Start(std::future<bool> &&futureObj)
 
                 GameShapes->cleanUpOldObjects();
 
-                score += (10);
-                GameShapes->updateScore(to_string(score));
+                dB->incrementScore(10);
+                GameShapes->updateScore(to_string(dB->getScore()));                                                         // ALONB - don't need to send this?
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
             }
         }
@@ -121,16 +124,16 @@ void Manager::Start(std::future<bool> &&futureObj)
             flickers--;
             if (flickers <= 0)
             {
-                cout << "LIVES : " << lives << endl;
-                if (lives > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
+                // cout << "LIVES : " << lives << endl;
+                if (dB->getLives() > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
                 {
-                    GameShapes->setActiveGame(lives);
+                    GameShapes->setActiveGame(dB->getLives());
                     state = MANAGER_SM_GAME;
                 }
                 else
                 {
                     // cout << "GAME OVER : " << lives << endl;
-                    GameShapes->gameOver(score, false);
+                    GameShapes->gameOver(dB->getScore(), false);
 
                     // reset the future and promise, update
                     // auto newptr = make_unique<AsyncSignal>();

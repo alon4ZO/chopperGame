@@ -8,7 +8,6 @@
 class Manager // ALONB Add static variable to make sure 1 initialization?
 {
 private:
-    uint32_t score;
     uint32_t speed;                 // how many pixels per second
     uint32_t maxObsticlesPerSecond; // how many obsiticles will be generated per second
 
@@ -17,17 +16,4 @@ public:
             uint32_t speed = MANAGER_INITIAL_OBSTICLE_SPEED_PIX_PER_SEC,
             uint32_t maxObsticlesPerSecond = MANAGER_INITIAL_SHARKS_PER_SEC) {}; // ALONB MANAGER_INITIAL_SHARKS_PER_SECis here 2 times
     void Start(std::future<bool> &&futureObj);
-};
-
-class dB // ALONB Add static variable to make sure 1 initialization?
-{
-    // can be used for fast access to needed data
-private:
-    uint32_t score;
-    uint32_t lives; // how many pixels per second
-
-public:
-    void getScore()
-    {
-    }
 };

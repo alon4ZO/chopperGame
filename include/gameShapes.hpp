@@ -94,7 +94,7 @@ public:
 
     void resetAsyncSignal();
 
-    std::mutex _mutex; // Define the mutex
+    std::mutex _mutex; // Define the mutex //ALONB MOVE THIS TO THE DB?
 
     // void clearAll(); // ALONB - make all these list part of a vector for safer cleaning.
     void clearAll();

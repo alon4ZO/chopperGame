@@ -3,6 +3,7 @@
 #include <iostream>
 #include <screen.hpp>
 #include <gameShapes.hpp>
+#include <dB.hpp>
 #include <mutex>
 #include <filesystem>
 #include <definitions.h>
@@ -55,15 +56,6 @@ void GameShapes::setActiveGame(uint8_t lives)
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
 
     livesToDraw = lives - 1;
-
-    // sf::Font font;
-    // font.loadFromFile("arial.ttf");
-    // Create a tex_si
-    //     sf::Text text("hello", font);
-    //     text.setCharacterSize(30);
-    //     text.setStyle(sf::Text::Bold);
-    //     text.setFillColor(sf::Color::Red);
-    // };
 };
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
@@ -246,7 +238,7 @@ void GameShapes::updateScore(string score)
 {
     // cout << "IN" << score << endl;
 
-    std::lock_guard<std::mutex> lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex); // ALONB - need to make sense of all these mutexes.
 
     this->score->updateText(score);
 }
@@ -421,6 +413,8 @@ void GameShapes::checkCollisions()
         if (itt->get()->checkColision(player->getBounds()))
         {
             prizes.erase(itt);
+            dB::getDB()->incrementScore(100);
+            // updateScore(to_string(dB::getDB()->getScore()));
             cout << "Prize" << endl;
             break;
         }
