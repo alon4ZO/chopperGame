@@ -106,7 +106,7 @@ public:
 
     void resetGameOver();
 
-    void setLives(uint8_t num);
+    void setLives();
 
     void setGameScreenDimensions(uint32_t x, uint32_t y)
     {

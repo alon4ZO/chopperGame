@@ -56,7 +56,7 @@ void GameShapes::setActiveGame(uint8_t lives)
     scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
 
-    livesToDraw = lives - 1;
+    // livesToDraw = lives - 1;
 };
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
@@ -103,10 +103,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     //     drawablesList.push_back((*it)->getDrawable()); // ALONB - use a shared pointer instead?
     // }
 
+    livesToDraw = dB::getDB()->getLives() - 1;
+
     int8_t livesToDrawNow = livesToDraw - (blackout ? 1 : 0);
     auto itt = lives.begin();
 
-    while (livesToDrawNow > 0)
+    while (livesToDrawNow > 0 && itt != lives.end())
     {
         // cout << "EEEEEEEEEEEEEEEEE" << endl;
         drawablesList.push_back((*itt)->getDrawable()); // ALONB - use a shared pointer instead?
@@ -431,15 +433,14 @@ void GameShapes::checkCollisions()
     }
 }
 
-void GameShapes::setLives(uint8_t num)
+void GameShapes::setLives()
 {
-
     std::lock_guard<std::mutex> lock(_mutex);
     uint32_t firstLiveLocation = dimensions::screenDimentions.x * 0.1;
 
     cout << "Setting lives icons" << endl;
 
-    for (int i = 0; i < num; i++)
+    for (int i = 0; i < dB::getDB()->getMaxLives(); i++)
     {
         // ALONB - change the way that the RegularSprite consturctor works because i have to add this 0 in the X and it's messy.
         unique_ptr<lifeIcon> life = make_unique<lifeIcon>(i);

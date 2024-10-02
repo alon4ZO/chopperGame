@@ -82,7 +82,7 @@ void Screen::Render(std::promise<bool> &&promise)
 
             gameShapes->updateMovables(deltaTime, playerSteps);
         }
-        std::lock_guard<std::mutex> lock(gameShapes->_mutex);
+        std::lock_guard<std::mutex> lock(gameShapes->_mutex); // The list that is generated is of pointers so canno move mutex lower than this.
 
         const vector<sf::Drawable *> &drawables = gameShapes->updateAndGetItemsToDraw(); // This must be refreshed.
 

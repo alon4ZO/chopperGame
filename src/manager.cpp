@@ -52,7 +52,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             // prizeCountDown = getRandomNumber(1, 2);
             prizeCountDown = 2;
             dB->setScore(0);
-            dB->setLives(3);
+            dB->setLives(2);
 
             GameShapes->clearAll();
             state = MANAGER_SM_COUNT_DOWN;
@@ -70,7 +70,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             {
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
-                GameShapes->setLives(dB->getLives()); // If using the DB, in both cases don't need to send the lives.
+                GameShapes->setLives(); // If using the DB, in both cases don't need to send the lives.
                 GameShapes->setActiveGame(dB->getLives());
                 continue;
             }
