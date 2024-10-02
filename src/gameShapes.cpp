@@ -33,6 +33,7 @@ void GameShapes::clearAll()
     numCountdown.clear();
     bubbles.clear();
     player.release();
+    prizes.clear();
 
     // ALONB - this should only clear player and obsticles, change name accordingly.
     // /itemsToDraw.clear();
@@ -60,6 +61,7 @@ void GameShapes::setActiveGame(uint8_t lives)
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 {
     // cout << "[screen] - update" << endl;
+    // std::lock_guard<std::mutex> lock(_mutex);
 
     drawablesList.clear(); // ALONB - maybe i should have a class of screens, each has it's own set of drawables, blinking drawables
 
@@ -162,6 +164,7 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 
 void GameShapes::setCountDown(uint8_t num)
 {
+    std::lock_guard<std::mutex> lock(_mutex);
     list<unique_ptr<sf::RectangleShape>> numShapes;
     switch (num)
     {
@@ -176,12 +179,13 @@ void GameShapes::setCountDown(uint8_t num)
         break;
     }
 
-    std::lock_guard<std::mutex> lock(_mutex);
     numCountdown = move(numShapes);
 }
 
 void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
 {
+
+    std::lock_guard<std::mutex> lock(_mutex);
 
     for (auto &i : sharks)
     {
@@ -246,6 +250,7 @@ void GameShapes::updateScore(string score)
 void GameShapes::createNewShark()
 {
 
+    std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
     do
     {
@@ -267,7 +272,6 @@ void GameShapes::createNewShark()
 
         if (!collisionDuringCreation)
         {
-            std::lock_guard<std::mutex> lock(_mutex);
             sharks.push_back(move(newShark));
             // cout << "SOL" << endl;
         }
@@ -278,6 +282,7 @@ void GameShapes::createNewShark()
 void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
 {
     // ALONB - add a non colliding private function to be used by meduz, shark.
+    std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
     do
     {
@@ -299,7 +304,6 @@ void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
 
         if (!collisionDuringCreation)
         {
-            std::lock_guard<std::mutex> lock(_mutex);
             meduzes.push_back(move(newMeduz));
             // cout << "SOL" << endl;
         }
@@ -310,6 +314,7 @@ void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
 void GameShapes::createNewPrize()
 {
 
+    std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
     do
     {
@@ -342,7 +347,6 @@ void GameShapes::createNewPrize()
 
         if (!collisionDuringCreation)
         {
-            std::lock_guard<std::mutex> lock(_mutex);
             prizes.push_back(move(newPrize));
             // cout << "SOL" << endl;
         }
@@ -387,6 +391,7 @@ void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and
 
 void GameShapes::checkCollisions()
 {
+    std::lock_guard<std::mutex> lock(_mutex);
 
     for (auto &i : sharks)
     {
@@ -416,6 +421,7 @@ void GameShapes::checkCollisions()
             dB::getDB()->incrementScore(100);
             // updateScore(to_string(dB::getDB()->getScore()));
             cout << "Prize" << endl;
+            this->score->updateText(to_string(dB::getDB()->getScore()));
             break;
         }
         else
@@ -487,7 +493,7 @@ void GameShapes::gameOver(uint32_t score, bool isHighScore)
 
 void GameShapes::resetGameOver()
 {
-    // std::lock_guard<std::mutex> lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     isGameOver = false;
 }

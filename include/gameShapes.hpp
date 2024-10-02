@@ -155,9 +155,15 @@ public:
     }
 
     void checkCollisions();
-    bool isCollionWithObsticle() { return isCollisions.first; }
+    bool isCollionWithObsticle()
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        return isCollisions.first;
+    }
     bool getIsGameOver()
     {
+        std::lock_guard<std::mutex> lock(_mutex);
+
         return isGameOver;
     }
     void flickerScreen();

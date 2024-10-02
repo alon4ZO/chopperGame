@@ -13,7 +13,7 @@ private:
     int32_t score;
     int32_t lives; // how many pixels per second
     static unique_ptr<dB> instance;
-    std::mutex _mutex; // Define the mutex //ALONB MOVE THIS TO THE DB?
+    std::mutex _mutex2; // Define the mutex //ALONB MOVE THIS TO THE DB?
 
 public:
     dB() : score(0), lives(0) {};
@@ -30,42 +30,42 @@ public:
 
     uint32_t getScore()
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         return score;
     }
 
     void setScore(uint32_t score)
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         this->score = score;
     }
 
     void incrementScore(uint32_t increment)
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         this->score += increment;
     }
 
     uint32_t getLives()
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         return lives;
     }
 
     void setLives(uint32_t lives)
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         this->lives = lives;
     }
 
     void decLives()
     {
-        std::lock_guard<std::mutex> lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex2);
 
         this->lives--;
     }

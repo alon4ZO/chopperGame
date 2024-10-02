@@ -33,6 +33,7 @@ Screen::Screen(float ratio)
     gameShapes->setGameScreenDimensions(gameXDim, gameYDim);
 }
 
+uint16_t tester = 0;
 void Screen::Render(std::promise<bool> &&promise)
 {
     GameShapes *gameShapes = GameShapes::getGameShapes();
@@ -51,13 +52,14 @@ void Screen::Render(std::promise<bool> &&promise)
             // ALONB - what to do when this closes?
         }
 
-        std::lock_guard<std::mutex> lock(gameShapes->_mutex);
         float deltaTime = clock.restart().asSeconds();
         window.clear(sf::Color::Black);
 
         if (gameShapes->getIsGameOver())
         {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+
+            tester++;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) || (tester == 0))
             {
                 cout << "ENTER" << endl;
                 // promise.set_value(true);
@@ -68,6 +70,7 @@ void Screen::Render(std::promise<bool> &&promise)
 
         if (!gameShapes->isCollionWithObsticle())
         {
+
             gameShapes->checkCollisions();
 
             playerSteps = {0, 0};
@@ -79,6 +82,7 @@ void Screen::Render(std::promise<bool> &&promise)
 
             gameShapes->updateMovables(deltaTime, playerSteps);
         }
+        std::lock_guard<std::mutex> lock(gameShapes->_mutex);
 
         const vector<sf::Drawable *> &drawables = gameShapes->updateAndGetItemsToDraw(); // This must be refreshed.
 

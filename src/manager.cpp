@@ -49,7 +49,8 @@ void Manager::Start(std::future<bool> &&futureObj)
             countDown = 3; // STATIC ASERT not bigger than 3
             flickers = 4;  // STATIC ASSERT even. //4
             meduzCountDown = getRandomNumber(5000, 50000);
-            prizeCountDown = getRandomNumber(1, 2);
+            // prizeCountDown = getRandomNumber(1, 2);
+            prizeCountDown = 2;
             dB->setScore(0);
             dB->setLives(3);
 
@@ -102,7 +103,7 @@ void Manager::Start(std::future<bool> &&futureObj)
                 {
                     GameShapes->createNewPrize();
                     // prizeCountDown = getRandomNumber(1, 2);
-                    prizeCountDown = 1000;
+                    prizeCountDown = 2;
                 }
 
                 GameShapes->cleanUpOldObjects();
