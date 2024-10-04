@@ -59,6 +59,7 @@ public:
 
         uint8_t livesToinc = (this->score / SCORE_PER_EXTRA_LIFE) - (oldScore / SCORE_PER_EXTRA_LIFE);
         this->lives = min(this->lives + livesToinc, MAX_LIVES);
+        // ALONB - lives is not protected properly.
 
         cout << "LIVES TO INC " << (uint32_t)livesToinc << endl;
     }

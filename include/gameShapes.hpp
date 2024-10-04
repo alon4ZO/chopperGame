@@ -98,7 +98,7 @@ public:
 
     // void clearAll(); // ALONB - make all these list part of a vector for safer cleaning.
     void clearAll();
-    void setActiveGame(uint8_t lives);
+    void setActiveGame();
 
     void setCountDown(uint8_t num);
 

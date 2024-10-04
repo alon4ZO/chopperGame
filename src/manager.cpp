@@ -32,7 +32,9 @@ void Manager::Start(std::future<bool> &&futureObj)
     int16_t prizeCountDown;
 
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
-    dB *dB = dB::getDB();
+    dB *dBInst = dB::getDB();
+
+    // std::lock_guard<std::mutex> lock(GameShapes->_mutex); // The list that is generated is of pointers so canno move mutex lower than this.
 
     // GameShapes->setActiveGame();
     while (1)
@@ -51,8 +53,8 @@ void Manager::Start(std::future<bool> &&futureObj)
             meduzCountDown = getRandomNumber(5000, 50000);
             // prizeCountDown = getRandomNumber(1, 2);
             prizeCountDown = 2;
-            dB->setScore(0);
-            dB->setLives(2);
+            dBInst->setScore(0);
+            dBInst->setLives(2);
 
             GameShapes->clearAll();
             state = MANAGER_SM_COUNT_DOWN;
@@ -71,7 +73,7 @@ void Manager::Start(std::future<bool> &&futureObj)
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
                 GameShapes->setLives(); // If using the DB, in both cases don't need to send the lives.
-                GameShapes->setActiveGame(dB->getLives());
+                GameShapes->setActiveGame();
                 continue;
             }
             this_thread::sleep_for(chrono::milliseconds(GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS));
@@ -84,7 +86,7 @@ void Manager::Start(std::future<bool> &&futureObj)
             // std::cout << "[Manager] - New shape" << std::endl;
             if (GameShapes->isCollionWithObsticle())
             {
-                dB->decLives();
+                dBInst->decLives();
                 state = MANAGER_SM_COLLISION;
                 // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
             }
@@ -108,8 +110,8 @@ void Manager::Start(std::future<bool> &&futureObj)
 
                 GameShapes->cleanUpOldObjects();
 
-                dB->incrementScore(10);
-                GameShapes->updateScore(to_string(dB->getScore()));                                                         // ALONB - don't need to send this?
+                dBInst->incrementScore(10);
+                GameShapes->updateScore(to_string(dBInst->getScore()));                                                     // ALONB - don't need to send this?
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
             }
         }
@@ -126,15 +128,15 @@ void Manager::Start(std::future<bool> &&futureObj)
             if (flickers <= 0)
             {
                 // cout << "LIVES : " << lives << endl;
-                if (dB->getLives() > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
+                if (dBInst->getLives() > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
                 {
-                    GameShapes->setActiveGame(dB->getLives());
+                    GameShapes->setActiveGame();
                     state = MANAGER_SM_GAME;
                 }
                 else
                 {
                     // cout << "GAME OVER : " << lives << endl;
-                    GameShapes->gameOver(dB->getScore(), false);
+                    GameShapes->gameOver(dBInst->getScore(), false);
 
                     // reset the future and promise, update
                     // auto newptr = make_unique<AsyncSignal>();

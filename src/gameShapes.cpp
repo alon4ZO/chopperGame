@@ -41,7 +41,7 @@ void GameShapes::clearAll()
     // rest player position ALONB
 }
 
-void GameShapes::setActiveGame(uint8_t lives)
+void GameShapes::setActiveGame()
 {
     clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
