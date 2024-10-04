@@ -15,7 +15,6 @@ private:
     uint8_t maxLives = MAX_LIVES;
 
     static unique_ptr<dB> instance;
-    std::mutex _mutex2; // Define the mutex //ALONB MOVE THIS TO THE DB?
 
 public:
     dB() : score(0), lives(0)
@@ -37,51 +36,48 @@ public:
 
     uint32_t getScore()
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
 
         return score;
     }
 
     void setScore(uint32_t score)
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
         this->score = score;
     }
 
-    void incrementScore(uint32_t increment)
+    bool incrementScore(uint32_t increment)
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
 
         int32_t oldScore;
 
         oldScore = this->score;
         this->score += increment;
 
-        uint8_t livesToinc = (this->score / SCORE_PER_EXTRA_LIFE) - (oldScore / SCORE_PER_EXTRA_LIFE);
-        this->lives = min(this->lives + livesToinc, MAX_LIVES);
-        // ALONB - lives is not protected properly.
+        bool isIncreaseLives = (this->score / SCORE_PER_EXTRA_LIFE) - (oldScore / SCORE_PER_EXTRA_LIFE) > 0 ? true : false;
 
-        cout << "LIVES TO INC " << (uint32_t)livesToinc << endl;
+        if (this->lives == MAX_LIVES)
+        {
+            return false;
+        }
+        this->lives += isIncreaseLives ? 1 : 0;
+        return isIncreaseLives;
     }
 
     uint32_t getLives()
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
 
         return lives;
     }
 
     void setLives(uint32_t lives)
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
 
         this->lives = lives;
     }
 
     void decLives()
     {
-        std::lock_guard<std::mutex> lock(_mutex2);
-
+        cout << "DEC" << endl;
         this->lives--;
     }
 

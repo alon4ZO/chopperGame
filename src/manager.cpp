@@ -34,7 +34,7 @@ void Manager::Start(std::future<bool> &&futureObj)
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
     dB *dBInst = dB::getDB();
 
-    // std::lock_guard<std::mutex> lock(GameShapes->_mutex); // The list that is generated is of pointers so canno move mutex lower than this.
+    // The list that is generated is of pointers so canno move mutex lower than this.
 
     // GameShapes->setActiveGame();
     while (1)
@@ -53,8 +53,11 @@ void Manager::Start(std::future<bool> &&futureObj)
             meduzCountDown = getRandomNumber(5000, 50000);
             // prizeCountDown = getRandomNumber(1, 2);
             prizeCountDown = 2;
-            dBInst->setScore(0);
-            dBInst->setLives(2);
+            {
+                std::lock_guard<std::mutex> lock(GameShapes->_mutex);
+                dBInst->setScore(0);
+                dBInst->setLives(2);
+            }
 
             GameShapes->clearAll();
             state = MANAGER_SM_COUNT_DOWN;
@@ -83,15 +86,17 @@ void Manager::Start(std::future<bool> &&futureObj)
         case MANAGER_SM_GAME:
         {
 
-            // std::cout << "[Manager] - New shape" << std::endl;
+            std::cout << "GAME" << std::endl;
             if (GameShapes->isCollionWithObsticle())
             {
-                dBInst->decLives();
+                std::cout << "DBG1" << std::endl;
+
                 state = MANAGER_SM_COLLISION;
-                // cout << "[Manager] - collision detected " << GameShapes->getobsticals().size() << endl;
             }
             else
             {
+                std::cout << "DBG2" << std::endl;
+
                 GameShapes->createNewShark();
                 // cout << "SHARK!" << endl;
 
@@ -109,9 +114,18 @@ void Manager::Start(std::future<bool> &&futureObj)
                 }
 
                 GameShapes->cleanUpOldObjects();
+                string scoreString;
+                {
 
-                dBInst->incrementScore(10);
-                GameShapes->updateScore(to_string(dBInst->getScore()));                                                     // ALONB - don't need to send this?
+                    std::lock_guard<std::mutex> lock(GameShapes->_mutex);
+                    if (dBInst->incrementScore(10))
+                    {
+                        cout << "INC from manager" << endl;
+                        GameShapes->createNewLiveIcon();
+                    }
+                    scoreString = to_string(dBInst->getScore());
+                }
+                GameShapes->updateScore(scoreString);                                                                       // ALONB - need to send this?
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
             }
         }
@@ -127,9 +141,15 @@ void Manager::Start(std::future<bool> &&futureObj)
             flickers--;
             if (flickers <= 0)
             {
+
+                {
+                    std::lock_guard<std::mutex> lock(GameShapes->_mutex);
+                    dBInst->decLives();
+                }
                 // cout << "LIVES : " << lives << endl;
                 if (dBInst->getLives() > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
                 {
+                    cout << "TST" << endl;
                     GameShapes->setActiveGame();
                     state = MANAGER_SM_GAME;
                 }

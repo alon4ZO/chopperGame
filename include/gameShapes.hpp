@@ -53,6 +53,7 @@ private:
     list<unique_ptr<RegularSprite>> lives;
     list<unique_ptr<GeneralText>> gameOverTexts;
     list<unique_ptr<Prize>> prizes;
+    list<unique_ptr<ExtraLifeIcon>> extraLifeIcons;
 
     uint8_t livesToDraw;
     uint32_t highScore;
@@ -107,6 +108,8 @@ public:
     void resetGameOver();
 
     void setLives();
+
+    void createNewLiveIcon();
 
     void setGameScreenDimensions(uint32_t x, uint32_t y)
     {

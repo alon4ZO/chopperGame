@@ -88,6 +88,16 @@ Player::Player(float scale, float accelarationFactor) : MovingSprite(shapeFactor
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
 
+ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(shapeFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+
+{
+    setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
+                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y / 2));
+
+    fadeTimeConst = 2;
+    fadeTimeInSec = fadeTimeConst;
+};
+
 list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
 {
     list<unique_ptr<sf::RectangleShape>> shapes;

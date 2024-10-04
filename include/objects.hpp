@@ -460,3 +460,23 @@ public:
         sprite.setPosition(actualX, actualY);
     }
 };
+
+class ExtraLifeIcon : public MovingSprite
+{
+    float fadeTimeInSec;
+    float fadeTimeConst;
+
+public:
+    ExtraLifeIcon();
+    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    {
+        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+
+        if (fadeTimeInSec > 0)
+        {
+            float alpha = (fadeTimeInSec / fadeTimeConst) * 255;
+            setAlpha(alpha);
+            fadeTimeInSec -= dt;
+        }
+    }
+};

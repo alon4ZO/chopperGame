@@ -34,6 +34,7 @@ void GameShapes::clearAll()
     bubbles.clear();
     player.release();
     prizes.clear();
+    extraLifeIcons.clear();
 
     // ALONB - this should only clear player and obsticles, change name accordingly.
     // /itemsToDraw.clear();
@@ -55,6 +56,7 @@ void GameShapes::setActiveGame()
     score = make_unique<ScoreText>();
     scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
+    cout << "[GameShapes] - setActiveGame DONE" << endl;
 
     // livesToDraw = lives - 1;
 };
@@ -124,6 +126,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
     }
 
     // drawablesList.push_back(it->getDrawable()); // ALONB - use a shared pointer instead?
+
+    for (const auto &i : extraLifeIcons)
+    {
+        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
+        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
+    }
 
     for (const auto &i : bubbles)
     {
@@ -202,6 +210,11 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
         i->advance(dt);
     }
     for (auto &i : prizes)
+    {
+        i->advance(dt);
+    }
+
+    for (auto &i : extraLifeIcons)
     {
         i->advance(dt);
     }
@@ -387,6 +400,15 @@ void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and
         cout << "POP prize" << endl;
         prizes.pop_front();
     }
+    cout << "DGB4" << endl;
+
+    while ((extraLifeIcons.size() > 0) && (!extraLifeIcons.front().get()->checkColision(screenRect)))
+    {
+        cout << "POP extraLifeIcons" << endl;
+        extraLifeIcons.pop_front();
+    }
+
+    cout << "DGB5" << endl;
 
     // ALONB - assert that the sizes do not explode?
 }
@@ -420,7 +442,12 @@ void GameShapes::checkCollisions()
         if (itt->get()->checkColision(player->getBounds()))
         {
             prizes.erase(itt);
-            dB::getDB()->incrementScore(100);
+            if (dB::getDB()->incrementScore(100))
+            {
+                cout << "INC" << endl;
+                createNewLiveIcon();
+            }
+
             // updateScore(to_string(dB::getDB()->getScore()));
             cout << "Prize" << endl;
             this->score->updateText(to_string(dB::getDB()->getScore()));
@@ -499,12 +526,8 @@ void GameShapes::resetGameOver()
     isGameOver = false;
 }
 
-// void GameShapes::resetAsyncSignal()
-// {
-//     // std::lock_guard<std::mutex> lock(_mutex);
-
-//     std::promise<bool> promiseObj = make_unique<>;
-//     std::future<bool> futureObj = promiseObj.get_future();
-
-//     isGameOver = false;
-// }
+void GameShapes::createNewLiveIcon()
+{
+    unique_ptr<ExtraLifeIcon> newLifeIcon = make_unique<ExtraLifeIcon>();
+    extraLifeIcons.push_back(move(newLifeIcon));
+}
