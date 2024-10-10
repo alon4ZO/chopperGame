@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <future>
+#include <type_traits>
 
 using namespace std;
 using namespace std::literals;
@@ -32,37 +33,33 @@ Manager::Manager()
 void Manager::Start()
 {
     MANAGER_SM_E state = MANAGER_SM_RESET;
-    int8_t countDown; // STATIC ASERT not bigger than 3
-    uint8_t flickers; // STATIC ASSERT even. //4
-    int16_t meduzCountDown;
-    int16_t prizeCountDown;
+    int8_t countDown;
+    uint8_t flickers;
+    int16_t meduzCountDownMs; // This is counted in seconds so that even when level rises, meduzes stay at constant rate.
+    int16_t prizeCountDownMs;
 
     GameShapes *GameShapes = GameShapes::getGameShapes(); // ALONB - change caps on actual obj
     dB *dBInst = dB::getDB();
 
-    // The list that is generated is of pointers so canno move mutex lower than this.
-
-    // GameShapes->setActiveGame();
     while (1)
     {
-        // std::cout << "R" << std::endl;
-
         switch (state)
         {
-
         case MANAGER_SM_RESET:
         {
             std::cout << "[Manager] - reseting " << std::endl;
 
-            countDown = 3; // STATIC ASERT not bigger than 3
-            flickers = 4;  // STATIC ASSERT even. //4
-            meduzCountDown = getRandomNumber(5000, 50000);
+            countDown = GAME_MANAGER_COUNTDOWN_START_NUM;
+            flickers = GAME_MANAGER_FLICKERS_WHEN_COLLIDE;
+            meduzCountDownMs = -1;
             // prizeCountDown = getRandomNumber(1, 2);
-            prizeCountDown = 2;
+            prizeCountDownMs = getRandomNumber(
+                GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+                GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
+
             {
                 std::lock_guard<std::mutex> lock(GameShapes->_mutex);
-                dBInst->setScore(0);
-                dBInst->setLives(2);
+                dBInst->resetScore();
             }
 
             GameShapes->clearAll();
@@ -92,31 +89,30 @@ void Manager::Start()
         case MANAGER_SM_GAME:
         {
 
-            std::cout << "GAME" << std::endl;
             if (GameShapes->isCollionWithObsticle())
             {
-                std::cout << "DBG1" << std::endl;
-
                 state = MANAGER_SM_COLLISION;
             }
             else
             {
-                std::cout << "DBG2" << std::endl;
-
                 GameShapes->createNewShark();
                 // cout << "SHARK!" << endl;
 
-                if (meduzCountDown-- <= 0)
+                if (meduzCountDownMs <= 0)
                 {
                     GameShapes->createNewMeduz();
-                    meduzCountDown = getRandomNumber(5000, 6000);
+                    meduzCountDownMs = getRandomNumber(
+                        GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+                        GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
                 }
 
-                if (prizeCountDown-- <= 0)
+                if (prizeCountDownMs <= 0)
                 {
                     GameShapes->createNewPrize();
                     // prizeCountDown = getRandomNumber(1, 2);
-                    prizeCountDown = 2;
+                    prizeCountDownMs = getRandomNumber(
+                        GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+                        GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
                 }
 
                 GameShapes->cleanUpOldObjects();
@@ -133,6 +129,9 @@ void Manager::Start()
                 }
                 GameShapes->updateScore(scoreString);                                                                       // ALONB - need to send this?
                 this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
+
+                meduzCountDownMs -= static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                prizeCountDownMs -= static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC);
             }
         }
         break;

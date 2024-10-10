@@ -23,9 +23,6 @@ GameShapes *GameShapes::getGameShapes()
 
 void GameShapes::clearAll()
 {
-
-    //
-    // for ()
     std::lock_guard<std::mutex> lock(_mutex);
 
     sharks.clear();

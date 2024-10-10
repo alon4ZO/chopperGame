@@ -5,10 +5,18 @@
 // Name
 #define GAME_NAME_STRING ("shark")
 
-// Screen Sizes
+// Game screen
 #define GAME_SCREEN_X_FROM_HOST_SCREEN_RATIO (0.8)
 #define GAME_SCREEN_X_TO_Y_RATIO (9.0f / 16)
 #define GAME_SCREEN_WALL_WIDTH_RATIO (0.15)
+
+// Game management
+#define GAME_MANAGER_GENERAL_RANDOM_FACTOR (0.3f)
+#define GAME_MANAGER_COUNTDOWN_START_NUM (2)
+#define GAME_MANAGER_FLICKERS_WHEN_COLLIDE (4)
+#define GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS (5000)
+#define GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS (20000)
+#define GAME_MANAGER_SHARKS_PER_PRIZE (0.3f)
 
 #define GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS (100)
 
@@ -65,3 +73,6 @@ static uint32_t getRandomNumber(T min, T max) // ALONB - how could this class ow
 
     // return eng;
 }
+
+static_assert(GAME_MANAGER_COUNTDOWN_START_NUM <= 3);
+static_assert(GAME_MANAGER_FLICKERS_WHEN_COLLIDE % 2 == 0);

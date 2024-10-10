@@ -40,9 +40,9 @@ public:
         return score;
     }
 
-    void setScore(uint32_t score)
+    void resetScore()
     {
-        this->score = score;
+        this->score = 0;
     }
 
     bool incrementScore(uint32_t increment)
