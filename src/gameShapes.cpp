@@ -263,7 +263,7 @@ void GameShapes::createNewBubble(float scale)
 
 void GameShapes::updateScore(string score)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
+    // std::lock_guard<std::mutex> lock(_mutex);
     this->score->updateText(score);
 }
 
@@ -363,7 +363,14 @@ void GameShapes::cleanUpOldObjects() // ALONB - explain in docu why i decided to
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
-    sf::FloatRect screenRect{0 - static_cast<float>(200), dimensions::activeGameYOffset - static_cast<float>(200), dimensions::activeGameDimentions.x + static_cast<float>(400), dimensions::activeGameDimentions.y + static_cast<float>(400)};
+    sf::FloatRect screenRect{
+        0 - static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG),
+        dimensions::activeGameYOffset -
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG),
+        dimensions::activeGameDimentions.x +
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG * 2),
+        dimensions::activeGameDimentions.y +
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG * 2)};
 
     while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
     {
@@ -373,25 +380,26 @@ void GameShapes::cleanUpOldObjects() // ALONB - explain in docu why i decided to
 
     while ((meduzes.size() > 0) && (!meduzes.front().get()->checkColision(screenRect)))
     {
-        assert(sharks.size() < 100);
+        assert(meduzes.size() < 100);
         meduzes.pop_front();
     }
 
     while ((bubbles.size() > 0) && (!bubbles.front().get()->checkColision(screenRect)))
     {
-        assert(sharks.size() < 100);
+        assert(bubbles.size() < 100); // ALONB ADD TEXTS
         bubbles.pop_front();
     }
 
-    while ((prizes.size() > 0) && (prizes.front().get()->canRelease()))
+    // while ((prizes.size() > 0) && (prizes.front().get()->canRelease()))
+    while ((prizes.size() > 0) && (!prizes.front().get()->checkColision(screenRect)))
     {
-        assert(sharks.size() < 100);
+        assert(prizes.size() < 100);
         prizes.pop_front();
     }
 
     while ((extraLifeIcons.size() > 0) && (!extraLifeIcons.front().get()->checkColision(screenRect)))
     {
-        assert(sharks.size() < 100);
+        assert(extraLifeIcons.size() < 100);
         extraLifeIcons.pop_front();
     }
 
@@ -406,8 +414,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            isCollisions.first = true;
-            // cout << "COLS" << endl;
+            isCollisions.first = true; // ALONB - no pair needed here
             break;
         }
     }
@@ -416,7 +423,6 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            // cout << "COLM" << endl;
             isCollisions.first = true;
             break;
         }
@@ -435,7 +441,7 @@ void GameShapes::checkCollisions()
 
             // updateScore(to_string(dB::getDB()->getScore()));
             cout << "Prize" << endl;
-            this->score->updateText(to_string(dB::getDB()->getScore()));
+            updateScore(to_string(dB::getDB()->getScore()));
             break;
         }
         else
@@ -464,7 +470,6 @@ void GameShapes::setLives()
 void GameShapes::flickerScreen()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-
     blackout = blackout ? false : true;
 }
 

@@ -48,13 +48,12 @@ public:
 
     bool incrementScore(uint32_t increment)
     {
-
         int32_t oldScore;
 
         oldScore = this->score;
         this->score += increment;
 
-        bool isIncreaseLives = (this->score / SCORE_PER_EXTRA_LIFE) - (oldScore / SCORE_PER_EXTRA_LIFE) > 0 ? true : false;
+        bool isIncreaseLives = (this->score / DB_SCORE_PER_EXTRA_LIFE) - (oldScore / DB_SCORE_PER_EXTRA_LIFE) > 0 ? true : false;
 
         if (this->lives == DB_MAX_LIVES)
         {
@@ -78,7 +77,6 @@ public:
 
     void decLives()
     {
-        cout << "DEC" << endl;
         this->lives--;
     }
 

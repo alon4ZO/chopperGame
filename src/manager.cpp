@@ -35,6 +35,7 @@ void Manager::Start()
     MANAGER_SM_E state = MANAGER_SM_RESET;
     int8_t countDown;
     uint8_t flickers;
+    float sharksPerSec;
     int16_t meduzCountDownMs; // This is counted in seconds so that even when level rises, meduzes stay at constant rate.
     int16_t prizeCountDownMs;
 
@@ -51,6 +52,8 @@ void Manager::Start()
 
             countDown = GAME_MANAGER_COUNTDOWN_START_NUM;
             flickers = GAME_MANAGER_FLICKERS_WHEN_COLLIDE;
+            sharksPerSec = MANAGER_INITIAL_SHARKS_PER_SECOND;
+
             meduzCountDownMs = -1;
             prizeCountDownMs = getRandomNumber(
                 GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
@@ -75,7 +78,7 @@ void Manager::Start()
             {
                 state = MANAGER_SM_GAME;
                 std::cout << "[Manager] - Starting active game " << std::endl;
-                GameShapes->setLives(); // If using the DB, in both cases don't need to send the lives.
+                GameShapes->setLives();
                 GameShapes->setActiveGame();
                 continue;
             }
@@ -97,6 +100,16 @@ void Manager::Start()
                 if (meduzCountDownMs <= 0)
                 {
                     GameShapes->createNewMeduz();
+
+                    {
+                        std::lock_guard<std::mutex> lock(GameShapes->_mutex);
+                        if (dBInst->incrementScore(DB_SCORE_SCORE_FOR_NEW_MEDUZA))
+                        {
+                            GameShapes->createNewLiveIcon();
+                        }
+                        string scoreString = to_string(dBInst->getScore());
+                        GameShapes->updateScore(scoreString);
+                    }
                     meduzCountDownMs = getRandomNumber(
                         GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
                         GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
@@ -112,33 +125,31 @@ void Manager::Start()
                 }
 
                 GameShapes->cleanUpOldObjects();
-                string scoreString;
-                {
 
+                {
                     std::lock_guard<std::mutex> lock(GameShapes->_mutex);
-                    if (dBInst->incrementScore(10))
+                    if (dBInst->incrementScore(DB_SCORE_SCORE_FOR_NEW_SHARK))
                     {
-                        cout << "INC from manager" << endl;
                         GameShapes->createNewLiveIcon();
                     }
-                    scoreString = to_string(dBInst->getScore());
+                    string scoreString = to_string(dBInst->getScore());
+                    GameShapes->updateScore(scoreString);
                 }
-                GameShapes->updateScore(scoreString);                                                                       // ALONB - need to send this?
-                this_thread::sleep_for(chrono::milliseconds(static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC))); // ALONB - randomize this a bit? or make different sizes for octs..
 
-                meduzCountDownMs -= static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC);
-                prizeCountDownMs -= static_cast<uint32_t>(1000 / MANAGER_INITIAL_SHARKS_PER_SEC);
+                uint32_t nextSleep = static_cast<uint32_t>(1000 / sharksPerSec);
+                this_thread::sleep_for(chrono::milliseconds(nextSleep));
+
+                meduzCountDownMs -= nextSleep;
+                prizeCountDownMs -= nextSleep;
             }
         }
         break;
 
         case MANAGER_SM_COLLISION:
         {
-            // cout << "COLLLLLLLLL" << endl;
             GameShapes->flickerScreen();
 
-            // std::cout << "[Manager] - New shape" << std::endl;
-            this_thread::sleep_for(chrono::milliseconds(150));
+            this_thread::sleep_for(chrono::milliseconds(GAME_MANAGER_SHARKS_FLICKER_TIME_MS));
             flickers--;
             if (flickers <= 0)
             {
@@ -147,28 +158,19 @@ void Manager::Start()
                     std::lock_guard<std::mutex> lock(GameShapes->_mutex);
                     dBInst->decLives();
                 }
-                // cout << "LIVES : " << lives << endl;
-                if (dBInst->getLives() > 0) // Because lives is not 0 based, 2 --> 2 lives, 1 means 1 life, 0 means no lifes.
+                if (dBInst->getLives() > 0)
                 {
-                    cout << "TST" << endl;
                     GameShapes->setActiveGame();
                     state = MANAGER_SM_GAME;
                 }
                 else
                 {
-                    // cout << "GAME OVER : " << lives << endl;
                     GameShapes->gameOver(dBInst->getScore(), false);
-
-                    // reset the future and promise, update
-                    // auto newptr = make_unique<AsyncSignal>();
-                    // GameShapes->asyncSignal = move(newptr);
                     GameShapes->asyncSignal.reset(new AsyncSignal());
-                    // GameShapes->asyncSignal.reset(move(make_unique<AsyncSignal>()));
                     GameShapes->clearAll();
-
                     state = MANAGER_SM_GAME_OVER;
                 }
-                flickers = 4;
+                flickers = 4; // ALONB not here right?
             }
         }
         break;
