@@ -62,8 +62,11 @@ ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(ObjectFactory::getPathForPng("extr
 
 // Factories:
 
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1()
 {
+
+    uint32_t boardWidth = dimensions::screenDimentions.x;
+    uint32_t boardHeight = dimensions::screenDimentions.y;
     list<unique_ptr<sf::RectangleShape>> shapes;
 
     uint32_t xDim, yDim, xPos, yPos;
@@ -82,8 +85,11 @@ list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1(uint32_t boardWid
     shapes.push_back(move(one_1));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2(uint32_t boardWidth, uint32_t boardHeight)
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2()
 {
+
+    uint32_t boardWidth = dimensions::screenDimentions.x;
+    uint32_t boardHeight = dimensions::screenDimentions.y;
     list<unique_ptr<sf::RectangleShape>> shapes;
 
     uint32_t xDim, yDim, xPos, yPos;
@@ -140,8 +146,11 @@ list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2(uint32_t boardWid
     shapes.push_back(move(two_5));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum3(uint32_t boardWidth, uint32_t boardHeight) // ALONB - this should be "drawable lowercase"
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum3()
 {
+
+    uint32_t boardWidth = dimensions::screenDimentions.x;
+    uint32_t boardHeight = dimensions::screenDimentions.y;
     list<unique_ptr<sf::RectangleShape>> shapes;
 
     uint32_t xDim, yDim, xPos, yPos;

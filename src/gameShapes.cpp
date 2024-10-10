@@ -7,6 +7,7 @@
 #include <mutex>
 #include <filesystem>
 #include <definitions.h>
+#include <cassert>
 
 using namespace std;
 
@@ -182,21 +183,21 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
 void GameShapes::setCountDown(uint8_t num)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    list<unique_ptr<sf::RectangleShape>> numShapes;
+    list<unique_ptr<sf::RectangleShape>> shapes;
     switch (num)
     {
     case 1:
-        numShapes = ObjectFactory::createNum1(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        shapes = ObjectFactory::createNum1();
         break;
     case 2:
-        numShapes = ObjectFactory::createNum2(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        shapes = ObjectFactory::createNum2();
         break;
     case 3:
-        numShapes = ObjectFactory::createNum3(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        shapes = ObjectFactory::createNum3();
         break;
     }
 
-    numCountdown = move(numShapes);
+    numCountdown = move(shapes);
 }
 
 void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
@@ -208,14 +209,17 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
     {
         i->advance(dt);
     }
+
     for (auto &i : meduzes)
     {
         i->advance(dt);
     }
+
     for (auto &i : bubbles)
     {
         i->advance(dt);
     }
+
     for (auto &i : prizes)
     {
         i->advance(dt);
@@ -245,7 +249,6 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
         {
             nextTimeUntilBubble = min(nextTimeUntilBubble * 1.8f, 1.0f);
             TimeUntilBubble = nextTimeUntilBubble;
-            // float scale = 1 - ((nextTimeUntilBubble - 0.01) / (1.0f - 0.01));
             float scale = 1;
             createNewBubble(scale); // ALONB - do I want different scales?
         }
@@ -254,18 +257,13 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
 
 void GameShapes::createNewBubble(float scale)
 {
-    // cout << scale << endl;
     unique_ptr<Bubble> newBubble = make_unique<Bubble>(0.8 * scale, -0.5, player->getBounds());
     bubbles.push_back(move(newBubble));
-    // cout << bubbles.size() << endl;
 }
 
 void GameShapes::updateScore(string score)
 {
-    // cout << "IN" << score << endl;
-
-    std::lock_guard<std::mutex> lock(_mutex); // ALONB - need to make sense of all these mutexes.
-
+    std::lock_guard<std::mutex> lock(_mutex);
     this->score->updateText(score);
 }
 
@@ -277,17 +275,35 @@ void GameShapes::createNewShark()
     do
     {
         collisionDuringCreation = false;
-        unique_ptr<Shark> newShark = make_unique<Shark>(0.08, -0.25);
 
-        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
+        // float sharkXscale;
+        // float sharkSpeed;
+
+        // sharkXscale = getRandomNumber(
+        //     OBJECTS_SHARK_SCALE_X * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+        //     OBJECTS_SHARK_SCALE_X * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
+
+        // sharkSpeed = getRandomNumber(
+        //     OBJECTS_SHARK_SPEED_X * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+        //     OBJECTS_SHARK_SPEED_X * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
+
+        // sharkXscale = getRandomNumber(
+        //     0.3f,
+        //     0.8f);
+
+        // cout << sharkXscale << endl;
+
+        // sharkXscale = 0.08;
+
+        unique_ptr<Shark> newShark = make_unique<Shark>(OBJECTS_SHARK_SCALE_X, OBJECTS_SHARK_SPEED_X);
+
+        // make sure there is no collision
 
         for (const auto &i : sharks)
         {
-            // if (i->checkColision(newShark.get()->getBounds()))
             if (i->checkColision(newShark->getBounds()))
             {
                 collisionDuringCreation = true;
-                // cout << "COL" << endl;
                 break;
             }
         }
@@ -295,47 +311,19 @@ void GameShapes::createNewShark()
         if (!collisionDuringCreation)
         {
             sharks.push_back(move(newShark));
-            // cout << "SOL" << endl;
         }
-
     } while (collisionDuringCreation);
 }
 
-void GameShapes::createNewMeduz() // ALONB the meduzes can collide?
+void GameShapes::createNewMeduz()
 {
-    // ALONB - add a non colliding private function to be used by meduz, shark.
     std::lock_guard<std::mutex> lock(_mutex);
-    bool collisionDuringCreation;
-    do
-    {
-        collisionDuringCreation = false;
-        unique_ptr<Meduz> newMeduz = make_unique<Meduz>(0.1, -0.25);
-
-        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
-
-        for (const auto &i : meduzes)
-        {
-            // if (i->checkColision(newShark.get()->getBounds()))
-            if (i->checkColision(newMeduz->getBounds()))
-            {
-                collisionDuringCreation = true;
-                // cout << "COL" << endl;
-                break;
-            }
-        }
-
-        if (!collisionDuringCreation)
-        {
-            meduzes.push_back(move(newMeduz));
-            // cout << "SOL" << endl;
-        }
-
-    } while (collisionDuringCreation);
+    unique_ptr<Meduz> newMeduz = make_unique<Meduz>(OBJECTS_MEDUZA_SCALE_X, OBJECTS_MEDUZA_SPEED_Y);
+    meduzes.push_back(move(newMeduz));
 }
 
 void GameShapes::createNewPrize()
 {
-
     std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
     do
@@ -343,24 +331,21 @@ void GameShapes::createNewPrize()
         collisionDuringCreation = false;
         unique_ptr<Prize> newPrize = make_unique<Prize>();
 
-        // MAKE SURE DOES NOT COLLIDE WITH OTHER SHARKS
-
+        // make sure there is no collision
         for (const auto &i : prizes)
         {
-            // if (i->checkColision(newShark.get()->getBounds()))
             if (i->checkColision(newPrize->getBounds()))
             {
                 collisionDuringCreation = true;
-                // cout << "COL" << endl;
                 break;
             }
         }
 
-        // ALONB this can also be for sharks, meduz, doesn't have to - optional
-        sf::FloatRect playerClearenceArea(player->getBounds().left - player->getBounds().width,
-                                          player->getBounds().top - player->getBounds().height,
-                                          player->getBounds().width * 3,
-                                          player->getBounds().height * 3);
+        sf::FloatRect playerClearenceArea(
+            player->getBounds().left - OBJECTS_NUM_OF_PLAYER_CLEARENCE_FROM_PRIZE * player->getBounds().width,
+            player->getBounds().top - OBJECTS_NUM_OF_PLAYER_CLEARENCE_FROM_PRIZE * player->getBounds().height,
+            player->getBounds().width * (OBJECTS_NUM_OF_PLAYER_CLEARENCE_FROM_PRIZE * 2 + 1),
+            player->getBounds().height * (OBJECTS_NUM_OF_PLAYER_CLEARENCE_FROM_PRIZE * 2 + 1));
 
         if (newPrize->checkColision(playerClearenceArea))
         {
@@ -370,52 +355,45 @@ void GameShapes::createNewPrize()
         if (!collisionDuringCreation)
         {
             prizes.push_back(move(newPrize));
-            // cout << "SOL" << endl;
         }
     } while (collisionDuringCreation);
 }
-// ALONB the meduzes can collide?
 
-void GameShapes::cleanUpOldObjects() // ALONB - make this: cleanup movables, and there should be an easily accessible list of movables.
+void GameShapes::cleanUpOldObjects() // ALONB - explain in docu why i decided to keep these in seperate lists, it would make rendering much harder etc..
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
-    // use get Bounds insted of manual calc can use the check collision with the screen
-
-    sf::FloatRect screenRect{0 - static_cast<float>(100), dimensions::activeGameYOffset - static_cast<float>(100), dimensions::activeGameDimentions.x + static_cast<float>(200), dimensions::activeGameDimentions.y + static_cast<float>(200)};
+    sf::FloatRect screenRect{0 - static_cast<float>(200), dimensions::activeGameYOffset - static_cast<float>(200), dimensions::activeGameDimentions.x + static_cast<float>(400), dimensions::activeGameDimentions.y + static_cast<float>(400)};
 
     while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
     {
+        assert(sharks.size() < 100);
         sharks.pop_front();
-        // cout << "POP" << endl;
     }
 
     while ((meduzes.size() > 0) && (!meduzes.front().get()->checkColision(screenRect)))
     {
+        assert(sharks.size() < 100);
         meduzes.pop_front();
-        // cout << "POPm" << endl;
     }
 
     while ((bubbles.size() > 0) && (!bubbles.front().get()->checkColision(screenRect)))
     {
+        assert(sharks.size() < 100);
         bubbles.pop_front();
-        // cout << "POPm" << endl;
     }
 
     while ((prizes.size() > 0) && (prizes.front().get()->canRelease()))
     {
-        cout << "POP prize" << endl;
+        assert(sharks.size() < 100);
         prizes.pop_front();
     }
-    cout << "DGB4" << endl;
 
     while ((extraLifeIcons.size() > 0) && (!extraLifeIcons.front().get()->checkColision(screenRect)))
     {
-        cout << "POP extraLifeIcons" << endl;
+        assert(sharks.size() < 100);
         extraLifeIcons.pop_front();
     }
-
-    cout << "DGB5" << endl;
 
     // ALONB - assert that the sizes do not explode?
 }

@@ -23,6 +23,15 @@
 #define DB_NUM_OF_INITIAL_LIVES (2)
 #define DB_MAX_LIVES (5)
 
+// Objects:
+#define OBJECTS_SHARK_SCALE_X (0.08f)
+#define OBJECTS_SHARK_SPEED_X (-0.25f)
+
+#define OBJECTS_MEDUZA_SCALE_X (0.1f)
+#define OBJECTS_MEDUZA_SPEED_Y (-0.25f)
+
+#define OBJECTS_NUM_OF_PLAYER_CLEARENCE_FROM_PRIZE (2)
+
 #define GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS (100)
 
 // graphics:
@@ -50,7 +59,7 @@
 
 // ALONB - this shouldn't be here
 template <class T>
-static uint32_t getRandomNumber(T min, T max) // ALONB - how could this class own some of the dimentions?
+static T getRandomNumber(T min, T max) // ALONB - how could this class own some of the dimentions?
 {
     // Create a random number generator and seed it with a random device
     std::random_device rd;
@@ -67,6 +76,7 @@ static uint32_t getRandomNumber(T min, T max) // ALONB - how could this class ow
     {
         // For floating-point types
         std::uniform_real_distribution<T> dist(min, max);
+
         return dist(eng);
     }
     else

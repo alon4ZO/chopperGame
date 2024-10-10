@@ -43,15 +43,17 @@ private:
     uint32_t blackout;
     bool isBlink;
 
+    list<unique_ptr<sf::RectangleShape>> numCountdown;
+    list<unique_ptr<RegularSprite>> lives;
+    unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
+    unique_ptr<ScoreText> score;
+    list<unique_ptr<GeneralText>> gameOverTexts;
+
     unique_ptr<Player> player;
+
     list<unique_ptr<Shark>> sharks;
     list<unique_ptr<Meduz>> meduzes;
     list<unique_ptr<Bubble>> bubbles;
-    list<unique_ptr<sf::RectangleShape>> numCountdown;
-    unique_ptr<ScoreText> score;
-    unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
-    list<unique_ptr<RegularSprite>> lives;
-    list<unique_ptr<GeneralText>> gameOverTexts;
     list<unique_ptr<Prize>> prizes;
     list<unique_ptr<ExtraLifeIcon>> extraLifeIcons;
 

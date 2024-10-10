@@ -93,7 +93,6 @@ void Manager::Start()
             else
             {
                 GameShapes->createNewShark();
-                // cout << "SHARK!" << endl;
 
                 if (meduzCountDownMs <= 0)
                 {
