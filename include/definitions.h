@@ -1,7 +1,15 @@
 #pragma once
 
 #include <random>
-// General
+
+// Name
+#define GAME_NAME_STRING ("shark")
+
+// Screen Sizes
+#define GAME_SCREEN_X_FROM_HOST_SCREEN_RATIO (0.8)
+#define GAME_SCREEN_X_TO_Y_RATIO (9.0f / 16)
+#define GAME_SCREEN_WALL_WIDTH_RATIO (0.15)
+
 #define GAME_BOARD_COUNTDOWN_TIME_INTERVALS_MS (100)
 
 // graphics:
@@ -10,10 +18,7 @@
 #define MAX_LIVES (5)
 #define SCORE_PER_EXTRA_LIFE (50)
 #define GAME_BOARD_PLAYER_X_SIZE_RATIO (0.05)
-#define GAME_BOARD_RATIO (0.8)
 #define GAME_BOARD_BUBBLE_X_SCALE (0.015)
-// #define GAME_BOARD_WALL_WIDTH_RATIO (0.2) // Factor
-#define GAME_BOARD_WALL_WIDTH_RATIO (0.15) // Factor
 
 #define GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC (0.6) // Factor
 #define GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC (0.6) // Factor

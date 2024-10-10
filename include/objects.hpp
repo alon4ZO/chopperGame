@@ -249,7 +249,7 @@ protected:
 class lifeIcon : public RegularSprite
 {
 public:
-    lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, GAME_BOARD_WALL_WIDTH_RATIO * 0.3)
+    lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
     // lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, 0.1)
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,

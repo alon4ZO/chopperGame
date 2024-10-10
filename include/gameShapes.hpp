@@ -113,11 +113,10 @@ public:
 
     void setGameScreenDimensions(uint32_t x, uint32_t y)
     {
-
         dimensions::screenDimentions.x = x;
         dimensions::screenDimentions.y = y;
 
-        dimensions::activeGameYOffset = y * GAME_BOARD_WALL_WIDTH_RATIO;
+        dimensions::activeGameYOffset = y * GAME_SCREEN_WALL_WIDTH_RATIO;
 
         dimensions::activeGameDimentions.x = x;
         dimensions::activeGameDimentions.y = dimensions::screenDimentions.y - dimensions::activeGameYOffset;

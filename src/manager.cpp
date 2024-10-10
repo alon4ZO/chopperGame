@@ -23,7 +23,13 @@ typedef enum ManagerSm
     MANAGER_SM_ERROR
 } MANAGER_SM_E;
 
-void Manager::Start(std::future<bool> &&futureObj)
+Manager::Manager()
+{
+    assert(!isInitialized && "screen was already initilized");
+    isInitialized = true;
+};
+
+void Manager::Start()
 {
     MANAGER_SM_E state = MANAGER_SM_RESET;
     int8_t countDown; // STATIC ASERT not bigger than 3

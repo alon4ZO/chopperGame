@@ -2,10 +2,12 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <screen.hpp>
-// #include <gameShapes.hpp>
+#include <gameShapes.hpp>
 #include <mutex>
 #include <filesystem>
 #include <definitions.h>
+#include <memory>
+#include <list>
 
 using namespace std;
 

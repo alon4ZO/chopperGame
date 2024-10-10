@@ -463,7 +463,6 @@ void GameShapes::checkCollisions()
 void GameShapes::setLives()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    uint32_t firstLiveLocation = dimensions::screenDimentions.x * 0.1;
 
     cout << "Setting lives icons" << endl;
 

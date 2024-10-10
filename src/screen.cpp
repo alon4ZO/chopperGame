@@ -1,25 +1,25 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <screen.hpp>
 #include <gameShapes.hpp>
-#include <thread>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
-/* singleton class to hold the main Screen object */
-
 Screen::Screen(float ratio)
 {
-    std::cout << "[Screen] - Setting up screen" << ratio << std::endl;
-    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
     uint32_t gameXDim;
     uint32_t gameYDim;
+    // Verify 1 time initilization for screen
+    assert(!isInitialized && "screen was already initilized");
+    isInitialized = true;
 
-    gameXDim = static_cast<uint32_t>(desktopMode.width * ratio);
-    // y = static_cast<uint32_t>(desktopMode.height * ratio);
-    gameYDim = gameXDim * 9 / 16 * ratio;
+    std::cout << "[Screen] - Setting up screen" << ratio << std::endl;
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+
+    gameXDim = desktopMode.width * ratio;
+    gameYDim = gameXDim * ratio * GAME_SCREEN_X_TO_Y_RATIO;
 
     // Print the Screen dimensions
     std::cout << "[Screen] - deskTop Width: " << desktopMode.width << std::endl;
@@ -27,14 +27,14 @@ Screen::Screen(float ratio)
     std::cout << "[Screen] - game Screen Width: " << gameXDim << std::endl;
     std::cout << "[Screen] - game Screen Height: " << gameYDim << std::endl;
 
-    window.create(sf::VideoMode(gameXDim, gameYDim), "Game"); // ALONB - name?
+    window.create(sf::VideoMode(gameXDim, gameYDim), GAME_NAME_STRING);
 
     GameShapes *gameShapes = GameShapes::getGameShapes();
     gameShapes->setGameScreenDimensions(gameXDim, gameYDim);
 }
 
 uint16_t tester = 0;
-void Screen::Render(std::promise<bool> &&promise)
+void Screen::Render()
 {
     GameShapes *gameShapes = GameShapes::getGameShapes();
     pair<float, float> playerSteps;
