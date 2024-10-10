@@ -11,7 +11,7 @@
 using namespace std;
 using namespace std::literals;
 
-class shapeFactory
+class ObjectFactory
 {
 private:
     static uint32_t numHeightPixels;
@@ -31,7 +31,7 @@ public:
     GeneralText(string displayString, float charSize, bool isBlink = false)
     {
         this->isBlink = isBlink;
-        string filePath = shapeFactory::getPathForPng("RowsOfSunflowers", ".ttf");
+        string filePath = ObjectFactory::getPathForPng("RowsOfSunflowers", ".ttf");
         if (!font.loadFromFile(filePath))
         {
             std::cerr << "Error loading font!" << std::endl;
@@ -249,8 +249,8 @@ protected:
 class lifeIcon : public RegularSprite
 {
 public:
-    lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
-    // lifeIcon(uint8_t id) : RegularSprite(shapeFactory::getPathForPng("player", ".png"), 0, 0.1)
+    lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
+    // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, 0.1)
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
                     (dimensions::activeGameYOffset - getBounds().height) / 2);

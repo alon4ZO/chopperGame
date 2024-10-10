@@ -73,7 +73,7 @@ private:
     pair<bool, bool> isCollisions;
 
     void createObsticle(uint32_t xPos, uint32_t boardHeight, uint32_t wallThickness, uint32_t spacing);
-    // unique_ptr<sf::Shape> shapeFactory();
+    // unique_ptr<sf::Shape> ObjectFactory();
 
     float clamp(float value, float minVal, float maxVal) // Just in case CPP is older than 17 used explicit function.
     {

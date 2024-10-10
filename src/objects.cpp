@@ -11,62 +11,22 @@
 
 using namespace std;
 
-string shapeFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
-{
-
-    const char *currentFilePath = __FILE__;
-    uint8_t option;
-    string flavor = "";
-
-    // std::cout << "Current File Path: " << currentFilePath << std::endl;
-
-    // Using filesystem to manipulate paths (C++17 and later)
-    std::filesystem::path path(currentFilePath);
-
-    // Getting the parent directory
-    std::filesystem::path parentDirectory = path.parent_path().parent_path();
-
-    if (randomOptions != 1)
-    {
-        option = getRandomNumber((0), randomOptions - 1);
-        flavor = "_" + to_string(option);
-    }
-
-    // Construct a relative path from the current file location
-    // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
-    std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + postfix); // Example relative
-
-    // Outputting the resolved relative path
-
-    string res = relativePath.u8string();
-
-    for (char &c : res)
-    {
-        if (c == '\\')
-        {
-            c = '/';
-        }
-    }
-
-    return res;
-}
-
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(shapeFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(ObjectFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
 {
     setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(shapeFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(ObjectFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(shapeFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
+Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(ObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
 
-Prize::Prize() : RegularSprite(shapeFactory::getPathForPng("prize", ".png"), 0.05)
+Prize::Prize() : RegularSprite(ObjectFactory::getPathForPng("prize", ".png"), 0.05)
 {
     // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
     setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
@@ -79,7 +39,7 @@ Prize::Prize() : RegularSprite(shapeFactory::getPathForPng("prize", ".png"), 0.0
     fading = false;
 }
 
-Player::Player(float scale, float accelarationFactor) : MovingSprite(shapeFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player(float scale, float accelarationFactor) : MovingSprite(ObjectFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
     // ALONB - some of the input params should just be private and don't need to come from the outside.
     currentXSpeed = 0;
@@ -90,7 +50,7 @@ Player::Player(float scale, float accelarationFactor) : MovingSprite(shapeFactor
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
 
-ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(shapeFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(ObjectFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
 
 {
     setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
@@ -100,7 +60,9 @@ ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(shapeFactory::getPathForPng("extra
     fadeTimeInSec = fadeTimeConst;
 };
 
-list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
+// Factories:
+
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1(uint32_t boardWidth, uint32_t boardHeight)
 {
     list<unique_ptr<sf::RectangleShape>> shapes;
 
@@ -120,7 +82,7 @@ list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum1(uint32_t boardWidt
     shapes.push_back(move(one_1));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum2(uint32_t boardWidth, uint32_t boardHeight)
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2(uint32_t boardWidth, uint32_t boardHeight)
 {
     list<unique_ptr<sf::RectangleShape>> shapes;
 
@@ -178,7 +140,7 @@ list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum2(uint32_t boardWidt
     shapes.push_back(move(two_5));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum3(uint32_t boardWidth, uint32_t boardHeight) // ALONB - this should be "drawable lowercase"
+list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum3(uint32_t boardWidth, uint32_t boardHeight) // ALONB - this should be "drawable lowercase"
 {
     list<unique_ptr<sf::RectangleShape>> shapes;
 
@@ -224,3 +186,43 @@ list<unique_ptr<sf::RectangleShape>> shapeFactory::createNum3(uint32_t boardWidt
     shapes.push_back(move(three_4));
     return shapes;
 };
+
+string ObjectFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
+{
+
+    const char *currentFilePath = __FILE__;
+    uint8_t option;
+    string flavor = "";
+
+    // std::cout << "Current File Path: " << currentFilePath << std::endl;
+
+    // Using filesystem to manipulate paths (C++17 and later)
+    std::filesystem::path path(currentFilePath);
+
+    // Getting the parent directory
+    std::filesystem::path parentDirectory = path.parent_path().parent_path();
+
+    if (randomOptions != 1)
+    {
+        option = getRandomNumber((0), randomOptions - 1);
+        flavor = "_" + to_string(option);
+    }
+
+    // Construct a relative path from the current file location
+    // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
+    std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + postfix); // Example relative
+
+    // Outputting the resolved relative path
+
+    string res = relativePath.u8string();
+
+    for (char &c : res)
+    {
+        if (c == '\\')
+        {
+            c = '/';
+        }
+    }
+
+    return res;
+}

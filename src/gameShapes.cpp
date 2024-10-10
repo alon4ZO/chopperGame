@@ -33,8 +33,18 @@ void GameShapes::clearAll()
     prizes.clear();
     extraLifeIcons.clear();
 
-    // ALONB - this should only clear player and obsticles, change name accordingly.
-    // /itemsToDraw.clear();
+    // ALONB: where are all of these?
+    //  unique_ptr<Player> player;
+    //  list<unique_ptr<Shark>> sharks;
+    //  list<unique_ptr<Meduz>> meduzes;
+    //  list<unique_ptr<Bubble>> bubbles;
+    //  list<unique_ptr<sf::RectangleShape>> numCountdown;
+    //  unique_ptr<ScoreText> score;
+    //  unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
+    //  list<unique_ptr<RegularSprite>> lives;
+    //  list<unique_ptr<GeneralText>> gameOverTexts;
+    //  list<unique_ptr<Prize>> prizes;
+    //  list<unique_ptr<ExtraLifeIcon>> extraLifeIcons;
 
     // rest player position ALONB
 }
@@ -51,7 +61,7 @@ void GameShapes::setActiveGame()
 
     player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO, GAME_BOARD_PLAYER_X_SIZE_RATIO * 0.1);
     score = make_unique<ScoreText>();
-    scoreSign = make_unique<RegularSprite>(shapeFactory::getPathForPng("score_sign", ".png"), 0.03);
+    scoreSign = make_unique<RegularSprite>(ObjectFactory::getPathForPng("score_sign", ".png"), 0.03);
     scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
     cout << "[GameShapes] - setActiveGame DONE" << endl;
 
@@ -176,13 +186,13 @@ void GameShapes::setCountDown(uint8_t num)
     switch (num)
     {
     case 1:
-        numShapes = shapeFactory::createNum1(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        numShapes = ObjectFactory::createNum1(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     case 2:
-        numShapes = shapeFactory::createNum2(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        numShapes = ObjectFactory::createNum2(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     case 3:
-        numShapes = shapeFactory::createNum3(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
+        numShapes = ObjectFactory::createNum3(dimensions::screenDimentions.x, dimensions::screenDimentions.y);
         break;
     }
 
@@ -509,7 +519,7 @@ void GameShapes::gameOver(uint32_t score, bool isHighScore)
     // else
     // {
 
-    //     unique_ptr<sf::Shape> shape = shapeFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
+    //     unique_ptr<sf::Shape> shape = ObjectFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
     //     std::lock_guard<std::mutex> lock(_mutex);
     //     blackout.push_back(move(shape));
     // }

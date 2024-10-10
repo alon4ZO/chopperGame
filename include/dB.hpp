@@ -12,7 +12,7 @@ class dB // ALONB Add static variable to make sure 1 initialization?
 private:
     int32_t score;
     int32_t lives;
-    uint8_t maxLives = MAX_LIVES;
+    uint8_t maxLives = DB_MAX_LIVES;
 
     static unique_ptr<dB> instance;
 
@@ -20,8 +20,8 @@ public:
     dB() : score(0), lives(0)
     {
         score = 0;
-        lives = NUM_OF_INITIAL_LIVES;
-        maxLives = MAX_LIVES;
+        lives = DB_NUM_OF_INITIAL_LIVES;
+        maxLives = DB_MAX_LIVES;
     };
 
     static dB *getDB()
@@ -40,9 +40,10 @@ public:
         return score;
     }
 
-    void resetScore()
+    void reset()
     {
         this->score = 0;
+        this->lives = DB_NUM_OF_INITIAL_LIVES;
     }
 
     bool incrementScore(uint32_t increment)
@@ -55,7 +56,7 @@ public:
 
         bool isIncreaseLives = (this->score / SCORE_PER_EXTRA_LIFE) - (oldScore / SCORE_PER_EXTRA_LIFE) > 0 ? true : false;
 
-        if (this->lives == MAX_LIVES)
+        if (this->lives == DB_MAX_LIVES)
         {
             return false;
         }

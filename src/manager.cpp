@@ -52,17 +52,16 @@ void Manager::Start()
             countDown = GAME_MANAGER_COUNTDOWN_START_NUM;
             flickers = GAME_MANAGER_FLICKERS_WHEN_COLLIDE;
             meduzCountDownMs = -1;
-            // prizeCountDown = getRandomNumber(1, 2);
             prizeCountDownMs = getRandomNumber(
                 GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
                 GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
 
             {
                 std::lock_guard<std::mutex> lock(GameShapes->_mutex);
-                dBInst->resetScore();
+                dBInst->reset();
             }
 
-            GameShapes->clearAll();
+            GameShapes->clearAll(); // ALONB - why this not clearing all?
             state = MANAGER_SM_COUNT_DOWN;
         }
         break;
@@ -71,8 +70,6 @@ void Manager::Start()
         {
             std::cout << "[Manager] - counting down - " << static_cast<uint32_t>(countDown) << std::endl;
             GameShapes->setCountDown(countDown);
-            // std::cout << "S" << std::endl;
-
             countDown--;
             if (countDown < 0)
             {
