@@ -1,18 +1,13 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
-#include <screen.hpp>
 #include <gameShapes.hpp>
 #include <manager.hpp>
 #include <dB.hpp>
 #include <thread>
-#include <chrono>
-#include <future>
-#include <type_traits>
 
 using namespace std;
 using namespace std::literals;
 
-unique_ptr<dB> dB::instance = nullptr;
+unique_ptr<dB> dB::instance = nullptr; // ALONB why is this here?
 
 typedef enum ManagerSm
 {
@@ -118,7 +113,6 @@ void Manager::Start()
                 if (prizeCountDownMs <= 0)
                 {
                     GameShapes->createNewPrize();
-                    // prizeCountDown = getRandomNumber(1, 2);
                     prizeCountDownMs = getRandomNumber(
                         GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
                         GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
@@ -161,26 +155,24 @@ void Manager::Start()
                 if (dBInst->getLives() > 0)
                 {
                     GameShapes->setActiveGame();
+                    flickers = GAME_MANAGER_FLICKERS_WHEN_COLLIDE;
                     state = MANAGER_SM_GAME;
                 }
                 else
                 {
+                    GameShapes->clearAll();
                     GameShapes->gameOver(dBInst->getScore(), false);
                     GameShapes->asyncSignal.reset(new AsyncSignal());
-                    GameShapes->clearAll();
                     state = MANAGER_SM_GAME_OVER;
                 }
-                flickers = 4; // ALONB not here right?
             }
         }
         break;
 
         case MANAGER_SM_GAME_OVER:
         {
-            // cout << "GAME OVER" << endl;
-
-            // GameShapes->blink();
-            if (GameShapes->asyncSignal->recieve(500))
+            std::cout << "[Manager] - game over " << std::endl;
+            if (GameShapes->asyncSignal->recieve(GAME_OVER_BLINK_TIME_MS))
             {
                 state = MANAGER_SM_RESET;
             }
@@ -193,7 +185,7 @@ void Manager::Start()
 
         case MANAGER_SM_ERROR:
         {
-            std::cout << "ERROR" << std::endl;
+            std::cout << "[Manager] - error " << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         break;

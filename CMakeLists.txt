@@ -21,6 +21,7 @@ set(SOURCES
     src/gameShapes.cpp
     src/objects.cpp
     src/dimensions.cpp
+    src/utils.cpp
 )
 
 link_directories($ENV{SFML_DIR}/lib)

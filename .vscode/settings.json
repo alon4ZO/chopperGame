@@ -63,6 +63,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "cassert": "cpp"
     }
 }

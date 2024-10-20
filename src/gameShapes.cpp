@@ -1,17 +1,14 @@
 // ALONB - enable some warnings and errors in compiler
-#include <SFML/Graphics.hpp>
 #include <iostream>
-#include <screen.hpp>
+#include <SFML/Graphics.hpp>
 #include <gameShapes.hpp>
 #include <dB.hpp>
 #include <mutex>
-#include <filesystem>
-#include <definitions.h>
 #include <cassert>
 
 using namespace std;
 
-unique_ptr<GameShapes> GameShapes::instance = nullptr;
+unique_ptr<GameShapes> GameShapes::instance = nullptr; // ALONB - where should this be?
 
 GameShapes *GameShapes::getGameShapes()
 {
@@ -451,6 +448,19 @@ void GameShapes::checkCollisions()
     }
 }
 
+bool GameShapes::isCollionWithObsticle()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    return isCollisions.first;
+}
+
+bool GameShapes::getIsGameOver()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    return isGameOver;
+}
+
 void GameShapes::setLives()
 {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -519,4 +529,15 @@ void GameShapes::createNewLiveIcon()
 {
     unique_ptr<ExtraLifeIcon> newLifeIcon = make_unique<ExtraLifeIcon>();
     extraLifeIcons.push_back(move(newLifeIcon));
+}
+
+void GameShapes::setGameScreenDimensions(uint32_t x, uint32_t y)
+{
+    dimensions::screenDimentions.x = x;
+    dimensions::screenDimentions.y = y;
+
+    dimensions::activeGameYOffset = y * GAME_SCREEN_WALL_WIDTH_RATIO;
+
+    dimensions::activeGameDimentions.x = x;
+    dimensions::activeGameDimentions.y = dimensions::screenDimentions.y - dimensions::activeGameYOffset;
 }
