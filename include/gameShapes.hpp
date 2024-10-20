@@ -6,7 +6,6 @@
 #include <memory>
 #include <list>
 #include <mutex>
-#include <algorithm>
 
 using namespace std;
 
@@ -34,39 +33,29 @@ private:
     uint32_t blackout;
     bool isBlink;
     bool isGameOver;
-
+    bool isCollisions;
     float TimeUntilBubble;
     float nextTimeUntilBubble;
-
     vector<sf::Drawable *> drawablesList;
 
-    pair<bool, bool> isCollisions; // ALONB - make bool
-
-    float clamp(float value, float minVal, float maxVal) // Just in case CPP is older than 17 used explicit function. ALONB - move this to a utils area
-    {
-        return max(minVal, min(maxVal, value));
-    }
+    // functions
     void createNewBubble(float scale);
 
 public:
     unique_ptr<AsyncSignal> asyncSignal;
-    // GameShapes(uint32_t x, uint32_t y);
-    GameShapes()
-    {
-        blackout = false;
-        // TimeUntilBubble = 1.0f;
-    }
+    GameShapes() {};
     GameShapes operator=(GameShapes &) = delete;
     GameShapes(GameShapes &) = delete;
     static GameShapes *getGameShapes();
 
-    std::mutex _mutex; // Define the mutex //ALONB MOVE THIS TO THE DB?
+    std::mutex _mutex; // Some others modules must use this as well.
 
-    void resetAsyncSignal();
     void clearAll();
     void setActiveGame();
     void setCountDown(uint8_t num);
     void gameOver(uint32_t score, bool isHighScore);
+    void blink();
+    void resetAsyncSignal();
     void resetGameOver();
     void setLives();
     void createNewLiveIcon();
@@ -82,5 +71,4 @@ public:
     bool isCollionWithObsticle();
     bool getIsGameOver();
     void flickerScreen();
-    void blink();
 };

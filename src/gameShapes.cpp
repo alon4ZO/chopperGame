@@ -52,7 +52,7 @@ void GameShapes::setActiveGame()
     clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
 
-    isCollisions = {false, false};
+    isCollisions = false;
 
     std::lock_guard<std::mutex> lock(_mutex);
     drawablesList.clear(); // ALONB - this clears the score as well, maybe it should stay!
@@ -411,7 +411,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            isCollisions.first = true; // ALONB - no pair needed here
+            isCollisions = true;
             break;
         }
     }
@@ -420,7 +420,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            isCollisions.first = true;
+            isCollisions = true;
             break;
         }
     }
@@ -451,7 +451,7 @@ void GameShapes::checkCollisions()
 bool GameShapes::isCollionWithObsticle()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return isCollisions.first;
+    return isCollisions;
 }
 
 bool GameShapes::getIsGameOver()
