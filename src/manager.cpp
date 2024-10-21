@@ -59,7 +59,6 @@ void Manager::Start()
                 dBInst->reset();
             }
 
-            GameShapes->clearAll(); // ALONB - why this not clearing all?
             state = MANAGER_SM_COUNT_DOWN;
         }
         break;
@@ -160,7 +159,6 @@ void Manager::Start()
                 }
                 else
                 {
-                    GameShapes->clearAll();
                     GameShapes->gameOver(dBInst->getScore(), false);
                     GameShapes->asyncSignal.reset(new AsyncSignal());
                     state = MANAGER_SM_GAME_OVER;

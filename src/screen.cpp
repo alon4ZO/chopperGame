@@ -78,7 +78,8 @@ void Screen::Render()
             playerSteps.first += sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 1 : 0;
             playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? -1 : 0;
             playerSteps.second += sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? 1 : 0;
-            // ALONB - there should be X speed and Y speed with proportions to the screen.
+            // ALONB - there is a bug! the game gets stuck when a key is pressed during countdown!
+            //  ALONB - there should be X speed and Y speed with proportions to the screen.
 
             gameShapes->updateMovables(deltaTime, playerSteps);
         }

@@ -41,12 +41,16 @@ private:
     vector<sf::Drawable *> drawablesList;
 
     // functions
-    void createNewBubble(float scale);
     template <typename T>
-    void addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw = -1);
+    void addShapeCollectionToScreen(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw = -1);
+    template <typename T>
+    void addSingleShapeToScreen(T &item);
+    template <typename T>
+    void simpleMoveShapeCollection(list<unique_ptr<T>> &collection, float dt);
 
-    template <typename T>
-    void addToScreenSingleShape(T &item); // ALONB - name change
+    void clearGameBoard();
+    void clearEndOfGame();
+    void createNewBubble();
 
 public:
     unique_ptr<AsyncSignal> asyncSignal;
@@ -57,14 +61,13 @@ public:
 
     std::mutex _mutex; // Some others modules must use this as well.
 
-    void clearAll();
     void setActiveGame();
-    void setCountDown(uint8_t num);
-    void gameOver(uint32_t score, bool isHighScore);
-    void blink();
-    void resetAsyncSignal();
-    void resetGameOver();
     void setLives();
+    void setCountDown(uint8_t num);
+    bool getIsGameOver();
+    void gameOver(uint32_t score, bool isHighScore);
+    void resetGameOver();
+    void flickerScreen();
     void createNewLiveIcon();
     void setGameScreenDimensions(uint32_t x, uint32_t y);
     void updateMovables(float dt, pair<int8_t, int8_t> playerSteps);
@@ -75,7 +78,8 @@ public:
     void cleanUpOldObjects();
     void checkCollisions();
     bool isCollionWithObsticle();
-    bool getIsGameOver();
-    void flickerScreen();
+    void blink();
+    void resetAsyncSignal();
+
     vector<sf::Drawable *> &updateAndGetItemsToDraw();
 };

@@ -11,7 +11,7 @@
 using namespace std;
 using namespace std::literals;
 
-class ObjectFactory
+class simpleObjectFactory
 {
 private:
     static uint32_t numHeightPixels;
@@ -31,7 +31,7 @@ public:
     GeneralText(string displayString, float charSize, bool isBlink = false)
     {
         this->isBlink = isBlink;
-        string filePath = ObjectFactory::getPathForPng("RowsOfSunflowers", ".ttf");
+        string filePath = simpleObjectFactory::getPathForPng("RowsOfSunflowers", ".ttf");
         if (!font.loadFromFile(filePath))
         {
             std::cerr << "Error loading font!" << std::endl;
@@ -275,7 +275,7 @@ protected:
 class lifeIcon : public RegularSprite
 {
 public:
-    lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
+    lifeIcon(uint8_t id) : RegularSprite(simpleObjectFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
     // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, 0.1)
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
@@ -286,7 +286,7 @@ public:
 class ScoresIcon : public RegularSprite
 {
 public:
-    ScoresIcon() : RegularSprite(ObjectFactory::getPathForPng("score_sign", ".png"), 0.03)
+    ScoresIcon() : RegularSprite(simpleObjectFactory::getPathForPng("score_sign", ".png"), 0.03)
     {
         setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
     }

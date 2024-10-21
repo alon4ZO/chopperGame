@@ -19,36 +19,8 @@ GameShapes *GameShapes::getGameShapes()
     return instance.get();
 }
 
-void GameShapes::clearAll()
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-
-    sharks.clear();
-    meduzes.clear();
-    numCountdown.clear();
-    bubbles.clear();
-    player.release();
-    prizes.clear();
-    extraLifeIcons.clear();
-
-    // ALONB: where are all of these?
-    //  unique_ptr<Player> player;
-    //  list<unique_ptr<Shark>> sharks;
-    //  list<unique_ptr<Meduz>> meduzes;
-    //  list<unique_ptr<Bubble>> bubbles;
-    //  list<unique_ptr<sf::RectangleShape>> numCountdown;
-    //  unique_ptr<ScoreText> score;
-    //  unique_ptr<RegularSprite> scoreSign; // ALONB - maybe some of these should be static
-    //  list<unique_ptr<RegularSprite>> lives;
-    //  list<unique_ptr<GeneralText>> gameOverTexts;
-    //  list<unique_ptr<Prize>> prizes;
-    //  list<unique_ptr<ExtraLifeIcon>> extraLifeIcons;
-
-    // rest player position ALONB
-}
-
 template <typename T>
-void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw) // ALONB - rename
+void GameShapes::addShapeCollectionToScreen(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw) // ALONB - make these inline?
 {
     if (numberOfItemsToDraw == -1)
     {
@@ -77,22 +49,32 @@ void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int
 }
 
 template <typename T>
-void GameShapes::addToScreenSingleShape(T &item) // ALONB - name change
+void GameShapes::addSingleShapeToScreen(T &item)
 {
     if (item)
     {
-        drawablesList.push_back(item->getDrawable());
+        if (!item->getIsBlink() || (item->getIsBlink() && !isBlink))
+        {
+            drawablesList.push_back(item->getDrawable());
+        }
+    }
+}
+
+template <typename T>
+void GameShapes::simpleMoveShapeCollection(list<unique_ptr<T>> &collection, float dt)
+{
+    for (auto &i : collection)
+    {
+        i->advance(dt);
     }
 }
 
 void GameShapes::setActiveGame()
 {
-    clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
-
-    isCollisions = false;
     std::lock_guard<std::mutex> lock(_mutex);
-
+    clearGameBoard();
+    isCollisions = false;
     player = make_unique<Player>();
     score = make_unique<ScoreText>();
     scoreSign = make_unique<ScoresIcon>();
@@ -105,46 +87,44 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this coul
     int8_t livesToDraw = dB::getDB()->getLives() - 1;
     livesToDraw = max(livesToDraw - (blackout ? 1 : 0), 0);
 
-    addToScreenShapeCollection(lives, livesToDraw);
-    addToScreenSingleShape(scoreSign);
-    addToScreenSingleShape(score);
-
-    if (isGameOver) // ALONB - put this in a function.
-    {
-        addToScreenShapeCollection(gameOverTexts);
-        return drawablesList;
-    }
+    addShapeCollectionToScreen(lives, livesToDraw);
+    addSingleShapeToScreen(scoreSign);
+    addSingleShapeToScreen(score);
 
     if (blackout)
     {
         return drawablesList;
     }
 
-    addToScreenShapeCollection(numCountdown);
-    addToScreenShapeCollection(extraLifeIcons);
-    addToScreenShapeCollection(bubbles);
-    addToScreenSingleShape(player);
-    addToScreenShapeCollection(prizes);
-    addToScreenShapeCollection(sharks);
-    addToScreenShapeCollection(meduzes);
+    addShapeCollectionToScreen(gameOverTexts);
+    addShapeCollectionToScreen(numCountdown);
+    addShapeCollectionToScreen(extraLifeIcons);
+    addShapeCollectionToScreen(bubbles);
+    addSingleShapeToScreen(player);
+    addShapeCollectionToScreen(prizes);
+    addShapeCollectionToScreen(sharks);
+    addShapeCollectionToScreen(meduzes);
 
     return drawablesList;
 }
 
 void GameShapes::setCountDown(uint8_t num)
 {
+
     std::lock_guard<std::mutex> lock(_mutex);
+
+    clearEndOfGame();
     list<unique_ptr<sf::RectangleShape>> shapes;
     switch (num)
     {
     case 1:
-        shapes = ObjectFactory::createNum1();
+        shapes = simpleObjectFactory::createNum1();
         break;
     case 2:
-        shapes = ObjectFactory::createNum2();
+        shapes = simpleObjectFactory::createNum2();
         break;
     case 3:
-        shapes = ObjectFactory::createNum3();
+        shapes = simpleObjectFactory::createNum3();
         break;
     }
 
@@ -156,36 +136,15 @@ void GameShapes::setCountDown(uint8_t num)
     }
 }
 
-void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
+void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps)
 {
 
     std::lock_guard<std::mutex> lock(_mutex);
-
-    for (auto &i : sharks)
-    {
-        i->advance(dt);
-    }
-
-    for (auto &i : meduzes)
-    {
-        i->advance(dt);
-    }
-
-    for (auto &i : bubbles)
-    {
-        i->advance(dt);
-    }
-
-    for (auto &i : prizes)
-    {
-        i->advance(dt);
-    }
-
-    for (auto &i : extraLifeIcons)
-    {
-        i->advance(dt);
-    }
-
+    simpleMoveShapeCollection(sharks, dt);
+    simpleMoveShapeCollection(meduzes, dt);
+    simpleMoveShapeCollection(bubbles, dt);
+    simpleMoveShapeCollection(prizes, dt);
+    simpleMoveShapeCollection(extraLifeIcons, dt);
     if (player)
     {
         player->advance(dt, playerSteps.first, playerSteps.second);
@@ -195,7 +154,7 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
 
     if ((playerSteps.first == 0) && (playerSteps.second == 0))
     {
-        nextTimeUntilBubble = 0.01;
+        nextTimeUntilBubble = GAME_SHAPES_BUBBLE_DT_INITIAL;
         TimeUntilBubble = nextTimeUntilBubble;
     }
     else
@@ -203,17 +162,16 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // A
         TimeUntilBubble -= dt;
         if (TimeUntilBubble < 0)
         {
-            nextTimeUntilBubble = min(nextTimeUntilBubble * 1.8f, 1.0f);
+            nextTimeUntilBubble = min(nextTimeUntilBubble * GAME_SHAPES_BUBBLE_DT_DECCELERATION_FACTOR, GAME_SHAPES_BUBBLE_DT_MAX);
             TimeUntilBubble = nextTimeUntilBubble;
-            float scale = 1;
-            createNewBubble(scale); // ALONB - do I want different scales?
+            createNewBubble();
         }
     }
 };
 
-void GameShapes::createNewBubble(float scale)
+void GameShapes::createNewBubble()
 {
-    unique_ptr<Bubble> newBubble = make_unique<Bubble>(0.8 * scale, -0.5, player->getBounds());
+    unique_ptr<Bubble> newBubble = make_unique<Bubble>(0.8, -0.5, player->getBounds());
     bubbles.push_back(move(newBubble));
 }
 
@@ -449,6 +407,26 @@ void GameShapes::blink()
     isBlink = isBlink ? false : true;
 }
 
+void GameShapes::clearGameBoard()
+{
+
+    numCountdown.clear();
+    extraLifeIcons.clear();
+    bubbles.clear();
+    player.release();
+    prizes.clear();
+    sharks.clear();
+    meduzes.clear();
+}
+
+void GameShapes::clearEndOfGame()
+{
+    gameOverTexts.clear();
+    lives.clear();
+    scoreSign.release();
+    score.release();
+}
+
 void GameShapes::gameOver(uint32_t score, bool isHighScore)
 {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -464,19 +442,7 @@ void GameShapes::gameOver(uint32_t score, bool isHighScore)
     gameOverTexts.push_back(move(ScoreCountText));
     gameOverTexts.push_back(move(pressEnterText));
 
-    // ALONB - clear game objects here, so everything is cleaner when presenting.
-
-    // if (blackout.size() == 1)
-    // {
-    //     blackout.pop_back();
-    // }
-    // else
-    // {
-
-    //     unique_ptr<sf::Shape> shape = ObjectFactory::createEmptyBlack(screenDimentions.x, screenDimentions.y, wallThickness); // ALONB - ad this level, they should all be called shape or something generic.
-    //     std::lock_guard<std::mutex> lock(_mutex);
-    //     blackout.push_back(move(shape));
-    // }
+    clearGameBoard();
 }
 
 void GameShapes::resetGameOver()

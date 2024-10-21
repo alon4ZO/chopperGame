@@ -11,22 +11,22 @@
 
 using namespace std;
 
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(ObjectFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(simpleObjectFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
 {
     setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(ObjectFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(simpleObjectFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(ObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
+Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(simpleObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
 
-Prize::Prize() : RegularSprite(ObjectFactory::getPathForPng("prize", ".png"), 0.05)
+Prize::Prize() : RegularSprite(simpleObjectFactory::getPathForPng("prize", ".png"), 0.05)
 {
     // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
     setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
@@ -39,7 +39,7 @@ Prize::Prize() : RegularSprite(ObjectFactory::getPathForPng("prize", ".png"), 0.
     fading = false;
 }
 
-Player::Player() : MovingSprite(ObjectFactory::getPathForPng("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player() : MovingSprite(simpleObjectFactory::getPathForPng("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
     currentXSpeed = 0;
     currentYSpeed = 0;
@@ -49,7 +49,7 @@ Player::Player() : MovingSprite(ObjectFactory::getPathForPng("player", ".png"), 
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
 
-ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(ObjectFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(simpleObjectFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
 
 {
     setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
@@ -61,7 +61,7 @@ ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(ObjectFactory::getPathForPng("extr
 
 // Factories:
 
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1()
+list<unique_ptr<sf::RectangleShape>> simpleObjectFactory::createNum1()
 {
 
     uint32_t boardWidth = dimensions::screenDimentions.x;
@@ -84,7 +84,7 @@ list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum1()
     shapes.push_back(move(one_1));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2()
+list<unique_ptr<sf::RectangleShape>> simpleObjectFactory::createNum2()
 {
 
     uint32_t boardWidth = dimensions::screenDimentions.x;
@@ -145,7 +145,7 @@ list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum2()
     shapes.push_back(move(two_5));
     return shapes;
 }
-list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum3()
+list<unique_ptr<sf::RectangleShape>> simpleObjectFactory::createNum3()
 {
 
     uint32_t boardWidth = dimensions::screenDimentions.x;
@@ -195,7 +195,7 @@ list<unique_ptr<sf::RectangleShape>> ObjectFactory::createNum3()
     return shapes;
 };
 
-string ObjectFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
+string simpleObjectFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
 {
 
     const char *currentFilePath = __FILE__;
