@@ -166,6 +166,11 @@ public:
     {
         return &item;
     }
+
+    bool getIsBlink()
+    {
+        return false;
+    }
 };
 
 class RegularSprite
@@ -255,6 +260,11 @@ public:
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
     {
         return &sprite;
+    }
+
+    bool getIsBlink()
+    {
+        return false;
     }
 
 protected:

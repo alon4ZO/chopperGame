@@ -55,7 +55,10 @@ void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int
 
         for (const auto &i : collection)
         {
-            drawablesList.push_back(i->getDrawable());
+            if (!i->getIsBlink() || (i->getIsBlink() && !isBlink))
+            {
+                drawablesList.push_back(i->getDrawable());
+            }
         }
     }
     else
@@ -63,7 +66,10 @@ void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int
         auto itt = collection.begin();
         while (numberOfItemsToDraw > 0 && itt != collection.end())
         {
-            drawablesList.push_back((*itt)->getDrawable());
+            if (!(*itt)->getIsBlink() || ((*itt)->getIsBlink() && !isBlink))
+            {
+                drawablesList.push_back((*itt)->getDrawable());
+            }
             numberOfItemsToDraw--;
             itt++;
         }
@@ -105,13 +111,7 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this coul
 
     if (isGameOver) // ALONB - put this in a function.
     {
-        for (const auto &i : gameOverTexts)
-        {
-            if (!i->getIsBlink() || (i->getIsBlink() && !isBlink))
-            {
-                drawablesList.push_back(i->getDrawable());
-            }
-        }
+        addToScreenShapeCollection(gameOverTexts);
         return drawablesList;
     }
 
