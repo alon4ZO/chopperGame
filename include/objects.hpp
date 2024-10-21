@@ -7,6 +7,7 @@
 #include <list>
 #include <mutex>
 #include <algorithm>
+#include <cassert>
 
 // ALONB - use a font that renders better than the one i have now, maybe then the hight ratios will work better.
 using namespace std;
@@ -126,56 +127,36 @@ public:
     }
 };
 
+// sprites
 class RegularSprite
 {
 public:
-    RegularSprite(string filePath, float scale, float scaleYoverride = -1) // ALONB - game screen dimensions should be retrieved every time or just saved? maybe it's a problem because the speed is also based on the screen dimentions and is set far above...
-    // ALONB - scale is according to X
+    RegularSprite(string filePath, float scaleX, float scaleYoverride = -1)
     {
-        // cout << "Making S " << filePath << "scale: " << scale << "x,y" << dimensions::screenDimentions.x << " " << dimensions::screenDimentions.y << endl;
         if (!texture.loadFromFile(filePath))
         {
             std::cerr << "Error loading image!" << std::endl;
-            return; // Exit if the image fails to load
+            assert(0); // ALONB - use exception?
         }
         sf::Vector2f originalSize(texture.getSize());
 
         // Calculate scale factors
-
         float imageScale;
 
         if (scaleYoverride == -1)
         {
-            float desiredWidth = dimensions::activeGameDimentions.x * scale; // Example desired width in pixels
+            float desiredWidth = dimensions::screenDimentions.x * scaleX;
             imageScale = desiredWidth / originalSize.x;
         }
         else
         {
-            // cout << dimensions::screenDimentions.y << endl;
-            // cout << scaleYoverride << endl;
-            // cout << originalSize.y << endl;
-            float desiredHeight = dimensions::screenDimentions.y * scaleYoverride; // Example desired width in pixels
-
+            float desiredHeight = dimensions::screenDimentions.y * scaleYoverride;
             imageScale = desiredHeight / originalSize.y;
-            cout << "D" << endl;
-            cout << imageScale << endl;
-            cout << originalSize.y << endl;
-            cout << (originalSize.y * imageScale) << endl;
-            cout << "S" << endl;
         }
 
-        // sprite.setPosition(500, 500);
-        // Create a sprite from the texture
-        setAlpha(255);
+        setAlpha(OBJECTS_MAX_COLOR_VALUE);
         sprite.setTexture(texture);
-        //  sprite.setPosition(locationPix.x, locationPix.y);
         sprite.setScale(imageScale, imageScale);
-
-        if (scaleYoverride != -1)
-        {
-            cout << "0HEIGHT:" << sprite.getGlobalBounds().height << endl;
-            cout << "WALL:" << dimensions::activeGameYOffset << endl;
-        }
     }
 
     sf::FloatRect getBounds()
@@ -183,31 +164,9 @@ public:
         return sprite.getGlobalBounds();
     }
 
-    void setLocation(float x, float y) // This is not really needed no?
-    {
-        sprite.setPosition(x, y);
-    }
-
     bool checkColision(sf::FloatRect rectangle)
     {
         return this->getBounds().intersects(rectangle);
-    }
-
-    void setAlpha(uint8_t alpha) // NO NEED THESE 2?
-    {
-        sprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(alpha)));
-        // cout << "FADING" << endl;
-        // cout << (uint32_t)alpha << endl;
-    }
-
-    uint8_t getAlpha()
-    {
-        return sprite.getColor().a;
-    }
-
-    void fade(uint8_t units)
-    {
-        setAlpha(getAlpha() - units);
     }
 
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
@@ -223,13 +182,33 @@ public:
 protected:
     sf::Sprite sprite;
     sf::Texture texture;
+
+    void setLocation(float x, float y)
+    {
+        sprite.setPosition(x, y);
+    }
+
+    void setAlpha(uint8_t alpha)
+    {
+        sprite.setColor(sf::Color(OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, static_cast<sf::Uint8>(alpha)));
+    }
+
+    uint8_t getAlpha()
+    {
+        return sprite.getColor().a;
+    }
+
+    void fade(uint8_t units)
+    {
+        setAlpha(getAlpha() - units);
+    }
 };
 
 class lifeIcon : public RegularSprite
 {
 public:
     lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
-    // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, 0.1)
+    // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForAssets("player", ".png"), 0, 0.1)
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
                     (dimensions::activeGameYOffset - getBounds().height) / 2);

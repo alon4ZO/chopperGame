@@ -20,7 +20,7 @@ Shark::Shark(float scale, float horizontalSpeed) : Obsticle(getPathForAsset("sha
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
+Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(getPathForAsset("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
