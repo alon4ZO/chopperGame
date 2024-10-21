@@ -152,6 +152,22 @@ public:
 //     }
 // };
 
+class CountDownNumberItem
+{
+private:
+    sf::RectangleShape item;
+
+public:
+    CountDownNumberItem(sf::RectangleShape item)
+    {
+        this->item = item;
+    }
+    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {}
+    {
+        return &item;
+    }
+};
+
 class RegularSprite
 {
 public:
@@ -254,6 +270,15 @@ public:
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
                     (dimensions::activeGameYOffset - getBounds().height) / 2);
+    }
+};
+
+class ScoresIcon : public RegularSprite
+{
+public:
+    ScoresIcon() : RegularSprite(ObjectFactory::getPathForPng("score_sign", ".png"), 0.03)
+    {
+        setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
     }
 };
 
@@ -388,7 +413,7 @@ private:
     float accelarationY;
 
 public:
-    Player(float scale, float accelarationFactor);
+    Player();
     void advance(float dt, int8_t x = 1, int8_t y = 1)
     {
         // cout << currentXSpeed << endl;

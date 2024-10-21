@@ -17,7 +17,8 @@ private:
     static unique_ptr<GameShapes> instance;
 
     // Game objects:
-    list<unique_ptr<sf::RectangleShape>> numCountdown;
+    // list<unique_ptr<sf::RectangleShape>> numCountdown;
+    list<unique_ptr<CountDownNumberItem>> numCountdown;
     list<unique_ptr<RegularSprite>> lives;
     unique_ptr<RegularSprite> scoreSign;
     unique_ptr<ScoreText> score;
@@ -31,7 +32,6 @@ private:
 
     // data:
     uint32_t highScore; // ALONB this shouldn't be here
-    uint8_t livesToDraw;
     uint32_t blackout;
     bool isBlink;
     bool isGameOver;
@@ -44,7 +44,9 @@ private:
     void createNewBubble(float scale);
     template <typename T>
     void addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw = -1);
-    void addToScreenSingleShape(float scale);
+
+    template <typename T>
+    void addToScreenSingleShape(T &item); // ALONB - name change
 
 public:
     unique_ptr<AsyncSignal> asyncSignal;

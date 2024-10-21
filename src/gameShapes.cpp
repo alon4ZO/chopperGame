@@ -48,10 +48,11 @@ void GameShapes::clearAll()
 }
 
 template <typename T>
-void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw)
+void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw) // ALONB - rename
 {
     if (numberOfItemsToDraw == -1)
     {
+
         for (const auto &i : collection)
         {
             drawablesList.push_back(i->getDrawable());
@@ -66,6 +67,15 @@ void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int
             numberOfItemsToDraw--;
             itt++;
         }
+    }
+}
+
+template <typename T>
+void GameShapes::addToScreenSingleShape(T &item) // ALONB - name change
+{
+    if (item)
+    {
+        drawablesList.push_back(item->getDrawable());
     }
 }
 
@@ -86,15 +96,12 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this coul
 {
     drawablesList.clear();
 
-    if (scoreSign)
-    {
-        drawablesList.push_back(scoreSign->getDrawable());
-    }
+    int8_t livesToDraw = dB::getDB()->getLives() - 1;
+    livesToDraw = max(livesToDraw - (blackout ? 1 : 0), 0);
 
-    if (score)
-    {
-        drawablesList.push_back(score->getDrawable());
-    }
+    addToScreenShapeCollection(lives, livesToDraw);
+    addToScreenSingleShape(scoreSign);
+    addToScreenSingleShape(score);
 
     if (isGameOver) // ALONB - put this in a function.
     {
@@ -108,40 +115,15 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this coul
         return drawablesList;
     }
 
-    // Game is not over:
-
-    int8_t livesToDraw = dB::getDB()->getLives() - 1;
-    livesToDraw = max(livesToDraw - (blackout ? 1 : 0), 0);
-    addToScreenShapeCollection(lives, livesToDraw);
-
-    // auto itt = lives.begin();
-    // while (livesToDrawNow > 0 && itt != lives.end())
-    // {
-    //     drawablesList.push_back((*itt)->getDrawable());
-    //     livesToDrawNow--;
-    //     itt++;
-    // }
-
     if (blackout)
     {
         return drawablesList;
     }
 
-    // draw all the items that should not disappear in blackout:
-
+    addToScreenShapeCollection(numCountdown);
     addToScreenShapeCollection(extraLifeIcons);
     addToScreenShapeCollection(bubbles);
-
-    if (player)
-    {
-        drawablesList.push_back(player->getDrawable());
-    }
-
-    for (const auto &i : numCountdown)
-    {
-        drawablesList.push_back(i.get());
-    }
-
+    addToScreenSingleShape(player);
     addToScreenShapeCollection(prizes);
     addToScreenShapeCollection(sharks);
     addToScreenShapeCollection(meduzes);
@@ -166,7 +148,12 @@ void GameShapes::setCountDown(uint8_t num)
         break;
     }
 
-    numCountdown = move(shapes);
+    numCountdown.clear();
+    for (auto &i : shapes)
+    {
+        unique_ptr<CountDownNumberItem> item = make_unique<CountDownNumberItem>(*(move(i)));
+        numCountdown.push_back(move(item));
+    }
 }
 
 void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps) // ALONB add inputs here.
