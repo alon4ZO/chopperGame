@@ -4,29 +4,28 @@
 #include <screen.hpp>
 #include <gameShapes.hpp>
 #include <mutex>
-#include <filesystem>
 #include <definitions.h>
 #include <memory>
 #include <list>
 
 using namespace std;
 
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(simpleObjectFactory::getPathForPng("meduz", ".png", 2), scale, {0, verticleSpeed})
+Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(getPathForAsset("meduz", ".png", 2), scale, {0, verticleSpeed})
 {
     setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(simpleObjectFactory::getPathForPng("shark", ".png"), scale, {horizontalSpeed, 0})
+Shark::Shark(float scale, float horizontalSpeed) : Obsticle(getPathForAsset("shark", ".png"), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(simpleObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
+Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
 
-Prize::Prize() : RegularSprite(simpleObjectFactory::getPathForPng("prize", ".png"), 0.05)
+Prize::Prize() : RegularSprite(getPathForAsset("prize", ".png"), 0.05)
 {
     // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
     setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
@@ -39,7 +38,7 @@ Prize::Prize() : RegularSprite(simpleObjectFactory::getPathForPng("prize", ".png
     fading = false;
 }
 
-Player::Player() : MovingSprite(simpleObjectFactory::getPathForPng("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player() : MovingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
     currentXSpeed = 0;
     currentYSpeed = 0;
@@ -49,7 +48,7 @@ Player::Player() : MovingSprite(simpleObjectFactory::getPathForPng("player", ".p
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
 
-ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(simpleObjectFactory::getPathForPng("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
 
 {
     setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
@@ -194,43 +193,3 @@ list<unique_ptr<sf::RectangleShape>> simpleObjectFactory::createNum3()
     shapes.push_back(move(three_4));
     return shapes;
 };
-
-string simpleObjectFactory::getPathForPng(string fileName, string postfix, uint8_t randomOptions) // Put this with the random num generator in utils tab. ALONB - not only Png, also for text now.
-{
-
-    const char *currentFilePath = __FILE__;
-    uint8_t option;
-    string flavor = "";
-
-    // std::cout << "Current File Path: " << currentFilePath << std::endl;
-
-    // Using filesystem to manipulate paths (C++17 and later)
-    std::filesystem::path path(currentFilePath);
-
-    // Getting the parent directory
-    std::filesystem::path parentDirectory = path.parent_path().parent_path();
-
-    if (randomOptions != 1)
-    {
-        option = getRandomNumber((0), randomOptions - 1);
-        flavor = "_" + to_string(option);
-    }
-
-    // Construct a relative path from the current file location
-    // std::filesystem::path relativePath = parentDirectory / "pic" / "player.png"; // Example relative
-    std::filesystem::path relativePath = parentDirectory / "pic" / (fileName + flavor + postfix); // Example relative
-
-    // Outputting the resolved relative path
-
-    string res = relativePath.u8string();
-
-    for (char &c : res)
-    {
-        if (c == '\\')
-        {
-            c = '/';
-        }
-    }
-
-    return res;
-}

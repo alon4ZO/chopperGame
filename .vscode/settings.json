@@ -64,6 +64,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "future": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "filesystem": "cpp"
     }
 }

@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <definitions.h>
 #include <dimensions.hpp>
+#include <utils.hpp>
 #include <memory>
 #include <list>
 #include <mutex>
@@ -21,17 +22,15 @@ public:
     static list<unique_ptr<sf::RectangleShape>> createNum1();
     static list<unique_ptr<sf::RectangleShape>> createNum2();
     static list<unique_ptr<sf::RectangleShape>> createNum3();
-    static string getPathForPng(string fileName, string postfix, uint8_t randomOptions = 1); // Put this with the random num generator in utils tab.
 };
 
 class GeneralText
 {
 public:
-    // GameText(scale, xPosition)
     GeneralText(string displayString, float charSize, bool isBlink = false)
     {
         this->isBlink = isBlink;
-        string filePath = simpleObjectFactory::getPathForPng("RowsOfSunflowers", ".ttf");
+        string filePath = getPathForAsset("RowsOfSunflowers", ".ttf");
         if (!font.loadFromFile(filePath))
         {
             std::cerr << "Error loading font!" << std::endl;
@@ -124,47 +123,6 @@ public:
     {
         // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
         setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);
-    }
-};
-
-// class Fade
-// {
-// private:
-//     uint8_t initialAlpha;
-//     uint8_t fadeSpeedAlphaPerSec;
-
-// public:
-//     Fade() : initialAlpha(255) {};
-//     void fadeStep(dt)
-//     {
-
-//     }
-
-//         void
-//         getAlpha()
-//     {
-//         return initialAlpha;
-//     }
-// };
-
-class CountDownNumberItem
-{
-private:
-    sf::RectangleShape item;
-
-public:
-    CountDownNumberItem(sf::RectangleShape item)
-    {
-        this->item = item;
-    }
-    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {}
-    {
-        return &item;
-    }
-
-    bool getIsBlink()
-    {
-        return false;
     }
 };
 
@@ -270,7 +228,7 @@ protected:
 class lifeIcon : public RegularSprite
 {
 public:
-    lifeIcon(uint8_t id) : RegularSprite(simpleObjectFactory::getPathForPng("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
+    lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
     // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForPng("player", ".png"), 0, 0.1)
     {
         setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
@@ -281,7 +239,7 @@ public:
 class ScoresIcon : public RegularSprite
 {
 public:
-    ScoresIcon() : RegularSprite(simpleObjectFactory::getPathForPng("score_sign", ".png"), 0.03)
+    ScoresIcon() : RegularSprite(getPathForAsset("score_sign", ".png"), 0.03)
     {
         setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
     }
@@ -509,5 +467,26 @@ public:
             setAlpha(alpha);
             fadeTimeInSec -= dt;
         }
+    }
+};
+
+class CountDownNumberItem
+{
+private:
+    sf::RectangleShape item;
+
+public:
+    CountDownNumberItem(sf::RectangleShape item)
+    {
+        this->item = item;
+    }
+    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {}
+    {
+        return &item;
+    }
+
+    bool getIsBlink()
+    {
+        return false;
     }
 };
