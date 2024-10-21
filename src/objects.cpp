@@ -21,7 +21,7 @@ Shark::Shark(float scale, float horizontalSpeed) : Obsticle(simpleObjectFactory:
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
-Bubble::Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect) : MovingSprite(simpleObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE * scaleFactor, {0, verticleSpeedFactor})
+Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(simpleObjectFactory::getPathForPng("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };

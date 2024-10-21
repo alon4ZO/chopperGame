@@ -69,12 +69,22 @@ void GameShapes::simpleMoveShapeCollection(list<unique_ptr<T>> &collection, floa
     }
 }
 
+template <typename T>
+void GameShapes::cleanOldShapesFromCollection(list<unique_ptr<T>> &collection, sf::FloatRect &screenRect)
+{
+    while ((collection.size() > 0) && (!collection.front().get()->checkColision(screenRect)))
+    {
+        assert(collection.size() < 100);
+        collection.pop_front();
+    }
+}
+
 void GameShapes::setActiveGame()
 {
     cout << "[GameShapes] - setActiveGame" << endl;
     std::lock_guard<std::mutex> lock(_mutex);
     clearGameBoard();
-    isCollisions = false;
+    isCollision = false;
     player = make_unique<Player>();
     score = make_unique<ScoreText>();
     scoreSign = make_unique<ScoresIcon>();
@@ -169,16 +179,15 @@ void GameShapes::updateMovables(float dt, pair<int8_t, int8_t> playerSteps)
     }
 };
 
-void GameShapes::createNewBubble()
+void GameShapes::updateScoreView(string score)
 {
-    unique_ptr<Bubble> newBubble = make_unique<Bubble>(0.8, -0.5, player->getBounds());
-    bubbles.push_back(move(newBubble));
+    this->score->updateText(score);
 }
 
-void GameShapes::updateScore(string score)
+void GameShapes::createNewBubble()
 {
-    // std::lock_guard<std::mutex> lock(_mutex);
-    this->score->updateText(score);
+    unique_ptr<Bubble> newBubble = make_unique<Bubble>(player->getBounds());
+    bubbles.push_back(move(newBubble));
 }
 
 void GameShapes::createNewShark()
@@ -186,28 +195,10 @@ void GameShapes::createNewShark()
 
     std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
+    uint16_t counter = 0;
     do
     {
         collisionDuringCreation = false;
-
-        // float sharkXscale;
-        // float sharkSpeed;
-
-        // sharkXscale = getRandomNumber(
-        //     OBJECTS_SHARK_SCALE_X * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
-        //     OBJECTS_SHARK_SCALE_X * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
-
-        // sharkSpeed = getRandomNumber(
-        //     OBJECTS_SHARK_SPEED_X * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
-        //     OBJECTS_SHARK_SPEED_X * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
-
-        // sharkXscale = getRandomNumber(
-        //     0.3f,
-        //     0.8f);
-
-        // cout << sharkXscale << endl;
-
-        // sharkXscale = 0.08;
 
         unique_ptr<Shark> newShark = make_unique<Shark>(OBJECTS_SHARK_SCALE_X, OBJECTS_SHARK_SPEED_X);
 
@@ -226,6 +217,8 @@ void GameShapes::createNewShark()
         {
             sharks.push_back(move(newShark));
         }
+        counter++;
+        assert(counter < OBJECTS_CREATE_OBJECT_MAX_RETRIES);
     } while (collisionDuringCreation);
 }
 
@@ -240,6 +233,8 @@ void GameShapes::createNewPrize()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     bool collisionDuringCreation;
+    uint16_t counter = 0;
+
     do
     {
         collisionDuringCreation = false;
@@ -270,6 +265,9 @@ void GameShapes::createNewPrize()
         {
             prizes.push_back(move(newPrize));
         }
+        counter++;
+        assert(counter < OBJECTS_CREATE_OBJECT_MAX_RETRIES);
+
     } while (collisionDuringCreation);
 }
 
@@ -278,46 +276,20 @@ void GameShapes::cleanUpOldObjects() // ALONB - explain in docu why i decided to
     std::lock_guard<std::mutex> lock(_mutex);
 
     sf::FloatRect screenRect{
-        0 - static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG),
+        0 - static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG_OBJECTS),
         dimensions::activeGameYOffset -
-            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG),
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG_OBJECTS),
         dimensions::activeGameDimentions.x +
-            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG * 2),
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG_OBJECTS * 2),
         dimensions::activeGameDimentions.y +
-            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG * 2)};
+            static_cast<float>(GAME_SCREEN_PADDING_FOR_CLEANINIG_OBJECTS * 2)};
 
-    while ((sharks.size() > 0) && (!sharks.front().get()->checkColision(screenRect)))
-    {
-        assert(sharks.size() < 100);
-        sharks.pop_front();
-    }
-
-    while ((meduzes.size() > 0) && (!meduzes.front().get()->checkColision(screenRect)))
-    {
-        assert(meduzes.size() < 100);
-        meduzes.pop_front();
-    }
-
-    while ((bubbles.size() > 0) && (!bubbles.front().get()->checkColision(screenRect)))
-    {
-        assert(bubbles.size() < 100); // ALONB ADD TEXTS
-        bubbles.pop_front();
-    }
-
-    // while ((prizes.size() > 0) && (prizes.front().get()->canRelease()))
-    while ((prizes.size() > 0) && (!prizes.front().get()->checkColision(screenRect)))
-    {
-        assert(prizes.size() < 100);
-        prizes.pop_front();
-    }
-
-    while ((extraLifeIcons.size() > 0) && (!extraLifeIcons.front().get()->checkColision(screenRect)))
-    {
-        assert(extraLifeIcons.size() < 100);
-        extraLifeIcons.pop_front();
-    }
-
-    // ALONB - assert that the sizes do not explode?
+    cleanOldShapesFromCollection(sharks, screenRect);
+    cleanOldShapesFromCollection(meduzes, screenRect);
+    cleanOldShapesFromCollection(bubbles, screenRect);
+    cleanOldShapesFromCollection(prizes, screenRect);
+    cleanOldShapesFromCollection(extraLifeIcons, screenRect);
+    cleanOldShapesFromCollection(sharks, screenRect);
 }
 
 void GameShapes::checkCollisions()
@@ -328,7 +300,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            isCollisions = true;
+            isCollision = true;
             break;
         }
     }
@@ -337,7 +309,7 @@ void GameShapes::checkCollisions()
     {
         if (i->checkColision(player->getBounds()))
         {
-            isCollisions = true;
+            isCollision = true;
             break;
         }
     }
@@ -347,15 +319,11 @@ void GameShapes::checkCollisions()
         if (itt->get()->checkColision(player->getBounds()))
         {
             prizes.erase(itt);
-            if (dB::getDB()->incrementScore(100))
+            if (dB::getDB()->incrementScore(DB_INC_POINTS_EXTRA_LIFE))
             {
-                cout << "INC" << endl;
                 createNewLiveIcon();
             }
-
-            // updateScore(to_string(dB::getDB()->getScore()));
-            cout << "Prize" << endl;
-            updateScore(to_string(dB::getDB()->getScore()));
+            updateScoreView(to_string(dB::getDB()->getScore()));
             break;
         }
         else
@@ -368,7 +336,7 @@ void GameShapes::checkCollisions()
 bool GameShapes::isCollionWithObsticle()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return isCollisions;
+    return isCollision;
 }
 
 bool GameShapes::getIsGameOver()
@@ -381,15 +349,11 @@ bool GameShapes::getIsGameOver()
 void GameShapes::setLives()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-
-    cout << "Setting lives icons" << endl;
+    cout << "[GameShapes] - Setting lives icons" << endl;
 
     for (int i = 0; i < dB::getDB()->getMaxLives(); i++)
     {
-        // ALONB - change the way that the RegularSprite consturctor works because i have to add this 0 in the X and it's messy.
         unique_ptr<lifeIcon> life = make_unique<lifeIcon>(i);
-
-        // Move to correct location
         lives.push_back(move(life));
     }
 }
@@ -427,22 +391,20 @@ void GameShapes::clearEndOfGame()
     score.release();
 }
 
-void GameShapes::gameOver(uint32_t score, bool isHighScore)
+void GameShapes::gameOver(uint32_t score, uint32_t highScore)
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
     isGameOver = true;
-    // this->score->updateText(score);
 
+    clearGameBoard();
     unique_ptr<GameOverText> gameOverText = make_unique<GameOverText>();
-    unique_ptr<ScoresText> ScoreCountText = make_unique<ScoresText>(gameOverText->getBounds().height * 2, 500, 500);
+    unique_ptr<ScoresText> ScoreCountText = make_unique<ScoresText>(gameOverText->getBounds().height * 2, score, highScore); // ALONB - this 2 should be a define. after selecting text.
     unique_ptr<pressEnterToRestart> pressEnterText = make_unique<pressEnterToRestart>();
 
     gameOverTexts.push_back(move(gameOverText));
     gameOverTexts.push_back(move(ScoreCountText));
     gameOverTexts.push_back(move(pressEnterText));
-
-    clearGameBoard();
 }
 
 void GameShapes::resetGameOver()

@@ -97,12 +97,12 @@ void Manager::Start()
 
                     {
                         std::lock_guard<std::mutex> lock(GameShapes->_mutex);
-                        if (dBInst->incrementScore(DB_SCORE_SCORE_FOR_NEW_MEDUZA))
+                        if (dBInst->incrementScore(DB_INC_POINTS_MEDUZ))
                         {
                             GameShapes->createNewLiveIcon();
                         }
                         string scoreString = to_string(dBInst->getScore());
-                        GameShapes->updateScore(scoreString);
+                        GameShapes->updateScoreView(scoreString);
                     }
                     meduzCountDownMs = getRandomNumber(
                         GAME_MANAGER_MEDUZA_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
@@ -121,12 +121,12 @@ void Manager::Start()
 
                 {
                     std::lock_guard<std::mutex> lock(GameShapes->_mutex);
-                    if (dBInst->incrementScore(DB_SCORE_SCORE_FOR_NEW_SHARK))
+                    if (dBInst->incrementScore(DB_INC_POINTS_SHARK))
                     {
                         GameShapes->createNewLiveIcon();
                     }
                     string scoreString = to_string(dBInst->getScore());
-                    GameShapes->updateScore(scoreString);
+                    GameShapes->updateScoreView(scoreString);
                 }
 
                 uint32_t nextSleep = static_cast<uint32_t>(1000 / sharksPerSec);
@@ -159,7 +159,7 @@ void Manager::Start()
                 }
                 else
                 {
-                    GameShapes->gameOver(dBInst->getScore(), false);
+                    GameShapes->gameOver(dBInst->getScore(), dBInst->getHighScore());
                     GameShapes->asyncSignal.reset(new AsyncSignal());
                     state = MANAGER_SM_GAME_OVER;
                 }

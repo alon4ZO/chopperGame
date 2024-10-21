@@ -98,19 +98,14 @@ class ScoresText : public GeneralText
 private:
     string synthasizeText(uint32_t currentScore, uint32_t highScore)
     {
-        if (highScore > currentScore)
+        if (currentScore < highScore)
         {
             return "Good Try! high score is " + to_string(highScore);
         }
 
-        else if (highScore < currentScore)
-        {
-            return "New high score - " + to_string(highScore) + "!";
-        }
-
         else
         {
-            return "Nice, you matched the high score -  " + to_string(highScore);
+            return "High score reached - " + to_string(highScore) + "!";
         }
     }
 
@@ -382,7 +377,7 @@ public:
             if (fadeTimeInSec < 0)
             {
                 canReleaseFlag = true;
-                sprite.setPosition(-1000, -1000);
+                sprite.setPosition(-1000, -1000); // so it gets clean by the collector.
             }
         }
 
@@ -407,7 +402,7 @@ public:
 class Bubble : public MovingSprite
 {
 public:
-    Bubble(float scaleFactor, float verticleSpeedFactor, sf::FloatRect playerBoundsRect);
+    Bubble(sf::FloatRect playerBoundsRect);
     void advance(float dt, int8_t x = 1, int8_t y = 1)
     {
         sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);

@@ -17,7 +17,7 @@ private:
     static unique_ptr<GameShapes> instance;
 
     // Game objects:
-    // list<unique_ptr<sf::RectangleShape>> numCountdown;
+
     list<unique_ptr<CountDownNumberItem>> numCountdown;
     list<unique_ptr<RegularSprite>> lives;
     unique_ptr<RegularSprite> scoreSign;
@@ -35,7 +35,7 @@ private:
     uint32_t blackout;
     bool isBlink;
     bool isGameOver;
-    bool isCollisions;
+    bool isCollision;
     float TimeUntilBubble;
     float nextTimeUntilBubble;
     vector<sf::Drawable *> drawablesList;
@@ -47,6 +47,8 @@ private:
     void addSingleShapeToScreen(T &item);
     template <typename T>
     void simpleMoveShapeCollection(list<unique_ptr<T>> &collection, float dt);
+    template <typename T>
+    void cleanOldShapesFromCollection(list<unique_ptr<T>> &collection, sf::FloatRect &screenRect);
 
     void clearGameBoard();
     void clearEndOfGame();
@@ -65,13 +67,13 @@ public:
     void setLives();
     void setCountDown(uint8_t num);
     bool getIsGameOver();
-    void gameOver(uint32_t score, bool isHighScore);
+    void gameOver(uint32_t score, uint32_t highScore);
     void resetGameOver();
     void flickerScreen();
     void createNewLiveIcon();
     void setGameScreenDimensions(uint32_t x, uint32_t y);
     void updateMovables(float dt, pair<int8_t, int8_t> playerSteps);
-    void updateScore(string score);
+    void updateScoreView(string score);
     void createNewShark();
     void createNewMeduz();
     void createNewPrize();
