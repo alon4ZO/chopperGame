@@ -9,6 +9,8 @@
 
 using namespace std;
 
+// Create a random number generator and seed it with a random device
+
 class GameShapes
 {
 private:
@@ -40,6 +42,9 @@ private:
 
     // functions
     void createNewBubble(float scale);
+    template <typename T>
+    void addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw = -1);
+    void addToScreenSingleShape(float scale);
 
 public:
     unique_ptr<AsyncSignal> asyncSignal;
@@ -60,7 +65,6 @@ public:
     void setLives();
     void createNewLiveIcon();
     void setGameScreenDimensions(uint32_t x, uint32_t y);
-    vector<sf::Drawable *> &updateAndGetItemsToDraw();
     void updateMovables(float dt, pair<int8_t, int8_t> playerSteps);
     void updateScore(string score);
     void createNewShark();
@@ -71,4 +75,5 @@ public:
     bool isCollionWithObsticle();
     bool getIsGameOver();
     void flickerScreen();
+    vector<sf::Drawable *> &updateAndGetItemsToDraw();
 };

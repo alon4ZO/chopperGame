@@ -47,50 +47,59 @@ void GameShapes::clearAll()
     // rest player position ALONB
 }
 
+template <typename T>
+void GameShapes::addToScreenShapeCollection(list<unique_ptr<T>> &collection, int8_t numberOfItemsToDraw)
+{
+    if (numberOfItemsToDraw == -1)
+    {
+        for (const auto &i : collection)
+        {
+            drawablesList.push_back(i->getDrawable());
+        }
+    }
+    else
+    {
+        auto itt = collection.begin();
+        while (numberOfItemsToDraw > 0 && itt != collection.end())
+        {
+            drawablesList.push_back((*itt)->getDrawable());
+            numberOfItemsToDraw--;
+            itt++;
+        }
+    }
+}
+
 void GameShapes::setActiveGame()
 {
     clearAll(); // ALONB - make this private?
     cout << "[GameShapes] - setActiveGame" << endl;
 
     isCollisions = false;
-
     std::lock_guard<std::mutex> lock(_mutex);
-    drawablesList.clear(); // ALONB - this clears the score as well, maybe it should stay!
 
-    player = make_unique<Player>(GAME_BOARD_PLAYER_X_SIZE_RATIO, GAME_BOARD_PLAYER_X_SIZE_RATIO * 0.1);
+    player = make_unique<Player>();
     score = make_unique<ScoreText>();
-    scoreSign = make_unique<RegularSprite>(ObjectFactory::getPathForPng("score_sign", ".png"), 0.03);
-    scoreSign->setLocation(score->getBounds().left - 1.5 * scoreSign->getBounds().width, (dimensions::activeGameYOffset * 1.1 - scoreSign->getBounds().height) / 2);
-    cout << "[GameShapes] - setActiveGame DONE" << endl;
-
-    // livesToDraw = lives - 1;
+    scoreSign = make_unique<ScoresIcon>();
 };
-vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
+
+vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this could use double buffering to get the mutex out of the screen
 {
-    // cout << "[screen] - update" << endl;
-    // std::lock_guard<std::mutex> lock(_mutex);
-
-    drawablesList.clear(); // ALONB - maybe i should have a class of screens, each has it's own set of drawables, blinking drawables
-
-    if (score)
-    {
-        // cout << "T" << endl;
-        drawablesList.push_back(score->getDrawable());
-    }
+    drawablesList.clear();
 
     if (scoreSign)
     {
-        // cout << "T" << endl;
         drawablesList.push_back(scoreSign->getDrawable());
     }
 
-    if (isGameOver)
+    if (score)
     {
-        // cout << gameOverTexts.size() << endl;
+        drawablesList.push_back(score->getDrawable());
+    }
+
+    if (isGameOver) // ALONB - put this in a function.
+    {
         for (const auto &i : gameOverTexts)
         {
-            // cout << std::boolalpha << isBlink << endl;
-            // if (!i->getIsBlink())
             if (!i->getIsBlink() || (i->getIsBlink() && !isBlink))
             {
                 drawablesList.push_back(i->getDrawable());
@@ -99,80 +108,43 @@ vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw()
         return drawablesList;
     }
 
-    // auto it = lives.begin();
-    // int8_t livesNoBlink = livesToDraw - 1;
+    // Game is not over:
 
-    // while (livesNoBlink >= 0)
+    int8_t livesToDraw = dB::getDB()->getLives() - 1;
+    livesToDraw = max(livesToDraw - (blackout ? 1 : 0), 0);
+    addToScreenShapeCollection(lives, livesToDraw);
+
+    // auto itt = lives.begin();
+    // while (livesToDrawNow > 0 && itt != lives.end())
     // {
-    //     it++;
-    //     livesNoBlink--;
-    //     // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-    //     drawablesList.push_back((*it)->getDrawable()); // ALONB - use a shared pointer instead?
+    //     drawablesList.push_back((*itt)->getDrawable());
+    //     livesToDrawNow--;
+    //     itt++;
     // }
-
-    livesToDraw = dB::getDB()->getLives() - 1;
-
-    int8_t livesToDrawNow = livesToDraw - (blackout ? 1 : 0);
-    auto itt = lives.begin();
-
-    while (livesToDrawNow > 0 && itt != lives.end())
-    {
-        // cout << "EEEEEEEEEEEEEEEEE" << endl;
-        drawablesList.push_back((*itt)->getDrawable()); // ALONB - use a shared pointer instead?
-        livesToDrawNow--;
-        itt++;
-    }
-
-    // cout << "dddd" << endl;
 
     if (blackout)
     {
         return drawablesList;
     }
 
-    // drawablesList.push_back(it->getDrawable()); // ALONB - use a shared pointer instead?
+    // draw all the items that should not disappear in blackout:
 
-    for (const auto &i : extraLifeIcons)
-    {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
-    }
-
-    for (const auto &i : bubbles)
-    {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
-    }
+    addToScreenShapeCollection(extraLifeIcons);
+    addToScreenShapeCollection(bubbles);
 
     if (player)
     {
-        // cout << "T" << endl;
         drawablesList.push_back(player->getDrawable());
     }
 
     for (const auto &i : numCountdown)
     {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i.get()); // ALONB - use a shared pointer instead?
+        drawablesList.push_back(i.get());
     }
 
-    for (const auto &i : prizes)
-    {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
-    }
-
-    for (const auto &i : sharks)
-    {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
-    }
-
-    for (const auto &i : meduzes)
-    {
-        // itemsToDraw.push_back(static_cast<sf::Drawable *>(i.get()));
-        drawablesList.push_back(i->getDrawable()); // ALONB - use a shared pointer instead?
-    }
+    addToScreenShapeCollection(prizes);
+    addToScreenShapeCollection(sharks);
+    addToScreenShapeCollection(meduzes);
 
     return drawablesList;
 }
@@ -504,6 +476,8 @@ void GameShapes::gameOver(uint32_t score, bool isHighScore)
     gameOverTexts.push_back(move(gameOverText));
     gameOverTexts.push_back(move(ScoreCountText));
     gameOverTexts.push_back(move(pressEnterText));
+
+    // ALONB - clear game objects here, so everything is cleaner when presenting.
 
     // if (blackout.size() == 1)
     // {

@@ -39,13 +39,12 @@ Prize::Prize() : RegularSprite(ObjectFactory::getPathForPng("prize", ".png"), 0.
     fading = false;
 }
 
-Player::Player(float scale, float accelarationFactor) : MovingSprite(ObjectFactory::getPathForPng("player", ".png"), scale, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player() : MovingSprite(ObjectFactory::getPathForPng("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
-    // ALONB - some of the input params should just be private and don't need to come from the outside.
     currentXSpeed = 0;
     currentYSpeed = 0;
-    accelarationX = GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * accelarationFactor;
-    accelarationY = GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC * accelarationFactor;
+    accelarationX = GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_FACTOR;
+    accelarationY = GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_FACTOR;
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
