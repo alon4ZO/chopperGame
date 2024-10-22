@@ -25,6 +25,42 @@ GeneralText::GeneralText(string displayString, float charSize, bool isBlink)
     text.setFillColor(sf::Color::Red);
 }
 
+ScoreText::ScoreText() : GeneralText("", dimensions::activeGameYOffset / 2)
+{
+    setPosition(dimensions::screenDimentions.x * 0.9, dimensions::activeGameYOffset * 0.2); // ALONB - CHANGE the positioning to be relative?
+}
+
+GameOverText::GameOverText() : GeneralText("Game Over", dimensions::screenDimentions.y / 4)
+{
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, (0));
+}
+
+string ScoresText::synthasizeText(uint32_t currentScore, uint32_t highScore)
+{
+    if (currentScore < highScore)
+    {
+        return "Good Try! high score is " + to_string(highScore);
+    }
+
+    else
+    {
+        return "High score reached - " + to_string(highScore) + "!";
+    }
+}
+
+ScoresText::ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y / 6)
+{
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition);
+}
+
+pressEnterToRestart::pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4, true) // ALONB - change name: add Text to pressEnterToRestart
+{
+    // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);
+}
+
+// sprites:
+
 RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride)
 {
     if (!texture.loadFromFile(filePath))
@@ -48,7 +84,7 @@ RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride
         imageScale = desiredHeight / originalSize.y;
     }
 
-    setAlpha(OBJECTS_MAX_COLOR_VALUE);
+    // setAlpha(OBJECTS_MAX_COLOR_VALUE);
     sprite.setTexture(texture);
     sprite.setScale(imageScale, imageScale);
 }

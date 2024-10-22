@@ -34,6 +34,7 @@ Screen::Screen(float ratio)
 }
 
 uint16_t tester = 0;
+float tst = 30;
 void Screen::Render()
 {
     GameShapes *gameShapes = GameShapes::getGameShapes();
@@ -53,6 +54,8 @@ void Screen::Render()
         }
 
         float deltaTime = clock.restart().asSeconds();
+        // tst -= deltaTime;
+        // cout << "screen " << tst << endl;
         window.clear(sf::Color::Black);
 
         if (gameShapes->getIsGameOver())

@@ -13,13 +13,7 @@
 using namespace std;
 using namespace std::literals;
 
-// class Drawable {
-
-//     sf::Drawable
-// }
-
 // Texts
-
 class GeneralText
 {
 private:
@@ -28,82 +22,41 @@ private:
 
 protected:
     sf::Text text;
+    void setPosition(float xLocation, float yLocation) { text.setPosition(xLocation, yLocation); }
 
 public:
     GeneralText(string displayString, float charSize, bool isBlink = false);
-
-    sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
-    {
-        return &text;
-    }
-
-    sf::FloatRect getBounds()
-    {
-        return text.getGlobalBounds();
-    }
-
-    bool getIsBlink()
-    {
-        return isBlink;
-    }
-
-    void setPosition(float xLocation, float yLocation)
-    {
-        text.setPosition(xLocation, yLocation);
-    }
+    sf::Drawable *getDrawable() { return &text; }
+    sf::FloatRect getBounds() { return text.getGlobalBounds(); }
+    bool getIsBlink() { return isBlink; }
 };
 
 class ScoreText : public GeneralText
 {
 public:
-    ScoreText() : GeneralText("", dimensions::activeGameYOffset / 2)
-    {
-        setPosition(dimensions::screenDimentions.x * 0.9, dimensions::activeGameYOffset * 0.2); // ALONB - CHANGE the positioning to be relative?
-    }
-
+    ScoreText();
     void updateText(string str) { text.setString(str); }
 };
 
 class GameOverText : public GeneralText
 {
 public:
-    GameOverText() : GeneralText("Game Over", dimensions::screenDimentions.y / 4)
-    {
-        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, (0));
-    }
+    GameOverText();
 };
 
 class ScoresText : public GeneralText
 {
 private:
-    string synthasizeText(uint32_t currentScore, uint32_t highScore)
-    {
-        if (currentScore < highScore)
-        {
-            return "Good Try! high score is " + to_string(highScore);
-        }
-
-        else
-        {
-            return "High score reached - " + to_string(highScore) + "!";
-        }
-    }
+    string synthasizeText(uint32_t currentScore, uint32_t highScore);
 
 public:
-    ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y / 6)
-    {
-        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition);
-    }
+    ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore);
 };
 
 class pressEnterToRestart : public GeneralText
 {
 public:
-    pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4, true)
-    {
-        // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
-        setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);
-    }
+    pressEnterToRestart();
 };
 
 // sprites
@@ -119,15 +72,7 @@ public:
 protected:
     sf::Sprite sprite;
     sf::Texture texture;
-
-    // ALONB move all  this alpha stuff to chainging sprite
     void setLocation(float x, float y) { sprite.setPosition(x, y); }
-    uint8_t getAlpha() { return sprite.getColor().a; }
-    void fade(uint8_t units) { setAlpha(getAlpha() - units); }
-    void setAlpha(uint8_t alpha)
-    {
-        sprite.setColor(sf::Color(OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, static_cast<sf::Uint8>(alpha)));
-    }
 };
 
 class lifeIcon : public RegularSprite
@@ -147,8 +92,16 @@ class ChangingSprite : public RegularSprite
 private:
     float timeUntilFadeStartSec;
     float fadingTimeSec;
-    float remainingFadeTimeSec; // ALONB - can it be conts?
+    float remainingFadeTimeSec;
     int32_t shouldFade;
+
+    void setAlpha(uint8_t alpha)
+    {
+        sprite.setColor(sf::Color(OBJECTS_MAX_COLOR_VALUE,
+                                  OBJECTS_MAX_COLOR_VALUE,
+                                  OBJECTS_MAX_COLOR_VALUE,
+                                  static_cast<sf::Uint8>(alpha)));
+    }
 
 protected:
     sf::Vector2f speedPixPerSecond;
@@ -217,7 +170,7 @@ public:
     {
         this->item = item;
     }
-    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {} mabe will also handle the blackout/blink?
+    sf::Drawable *getDrawable()
     {
         return &item;
     }
@@ -237,5 +190,4 @@ public:
 };
 
 // ALONB - provide a colliding function that takes 2 base objects?
-
 // ALONB - make meduz decelerate when switching direction
