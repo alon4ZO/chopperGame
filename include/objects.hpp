@@ -13,35 +13,24 @@
 using namespace std;
 using namespace std::literals;
 
-class simpleObjectFactory
-{
-private:
-    static uint32_t numHeightPixels;
-    static uint32_t numWidthPixels;
+// class Drawable {
 
-public:
-    static list<unique_ptr<sf::RectangleShape>> createNum1();
-    static list<unique_ptr<sf::RectangleShape>> createNum2();
-    static list<unique_ptr<sf::RectangleShape>> createNum3();
-};
+//     sf::Drawable
+// }
+
+// Texts
 
 class GeneralText
 {
+private:
+    sf::Font font;
+    bool isBlink;
+
+protected:
+    sf::Text text;
+
 public:
-    GeneralText(string displayString, float charSize, bool isBlink = false)
-    {
-        this->isBlink = isBlink;
-        string filePath = getPathForAsset("RowsOfSunflowers", ".ttf");
-        if (!font.loadFromFile(filePath))
-        {
-            std::cerr << "Error loading font!" << std::endl;
-            return; // Exit if the image fails to load
-        }
-        text.setString(displayString);
-        text.setFont(font);
-        text.setCharacterSize(charSize);
-        text.setFillColor(sf::Color::Red);
-    }
+    GeneralText(string displayString, float charSize, bool isBlink = false);
 
     sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
     {
@@ -58,15 +47,10 @@ public:
         return isBlink;
     }
 
-    void setPosition(float xLocation, float yLocation) // 0.9, 0.25
+    void setPosition(float xLocation, float yLocation)
     {
         text.setPosition(xLocation, yLocation);
     }
-
-protected:
-    sf::Text text;
-    sf::Font font;
-    bool isBlink;
 };
 
 class ScoreText : public GeneralText
@@ -77,11 +61,7 @@ public:
         setPosition(dimensions::screenDimentions.x * 0.9, dimensions::activeGameYOffset * 0.2); // ALONB - CHANGE the positioning to be relative?
     }
 
-    void updateText(string str)
-    {
-        text.setString(str);
-        auto rect = text.getGlobalBounds();
-    }
+    void updateText(string str) { text.setString(str); }
 };
 
 class GameOverText : public GeneralText
@@ -113,7 +93,6 @@ public:
     ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y / 6)
     {
         setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition);
-        // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, 500);
     }
 };
 
@@ -168,7 +147,7 @@ class ChangingSprite : public RegularSprite
 private:
     float timeUntilFadeStartSec;
     float fadingTimeSec;
-    float remainingFadeTimeSec;
+    float remainingFadeTimeSec; // ALONB - can it be conts?
     int32_t shouldFade;
 
 protected:
@@ -204,66 +183,15 @@ public:
     ExtraLifeIcon();
 };
 
-class Prize : public RegularSprite
+class Prize : public ChangingSprite
 {
 private:
-    float fadeSpeedAlphaPerSec = 60;
-    float alpha = 255;
     float yMid;
     float yDelta = 200;
-    float max = 0;
-    float min = 0;
-    float timeBeforeFadingSec;
-    float fadeTimeInSec;
-    float fadeTimeConst; // ALONB - make this const
-    bool fading;
-    bool canReleaseFlag = false;
 
 public:
     Prize();
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
-    {
-        // fade
-        if (!fading)
-        {
-            timeBeforeFadingSec -= dt;
-            if (timeBeforeFadingSec < 0)
-            {
-                cout << "START FADE" << endl;
-                fadeTimeConst = fadeTimeInSec;
-                fading = true;
-            }
-        }
-
-        else if (!canReleaseFlag)
-        {
-            alpha = (fadeTimeInSec / fadeTimeConst) * 255;
-            setAlpha(alpha);
-            fadeTimeInSec -= dt;
-
-            if (fadeTimeInSec < 0)
-            {
-                canReleaseFlag = true;
-                sprite.setPosition(-1000, -1000); // so it gets clean by the collector.
-            }
-        }
-
-        // move
-        yDelta += (yMid - getBounds().top) * dt * 0.003;
-        // cout << yDelta << endl;
-
-        if ((getBounds().top < yMid) && (getBounds().top + yDelta >= yMid))
-        {
-            // Fix so that the boyancy movement stays in ranges.
-            yDelta = 0.015;
-        }
-        sprite.move(0, yDelta);
-    }
-
-    bool canRelease()
-    {
-        return canReleaseFlag;
-    }
+    void advance(float dt, int8_t x = 1, int8_t y = 1) override;
 };
 
 class Player : public ChangingSprite
@@ -276,77 +204,7 @@ private:
 
 public:
     Player();
-    void advance(float dt, int8_t x = 1, int8_t y = 1) override
-    {
-        // cout << currentXSpeed << endl;
-        // cout << "[x,y]" << (uint32_t)x << " " << (uint32_t)y << endl;
-        accelarationX = 4000 * dt;
-        accelarationY = 3000 * dt / 1.6;
-        if (x == 1)
-        {
-            currentXSpeed = min(currentXSpeed + accelarationX, speedPixPerSecond.x);
-        }
-
-        else if (x == -1)
-        {
-            currentXSpeed = max(currentXSpeed - accelarationX, -speedPixPerSecond.x);
-        }
-
-        else if (x == 0)
-        {
-            if (currentXSpeed > 0)
-            {
-                currentXSpeed = max(currentXSpeed - accelarationX, 0.0f);
-            }
-            else if (currentXSpeed < 0)
-            {
-                currentXSpeed = min(currentXSpeed + accelarationX, 0.0f);
-            }
-        }
-
-        if (y == 1)
-        {
-            currentYSpeed = min(currentYSpeed + accelarationY, speedPixPerSecond.y);
-        }
-
-        else if (y == -1)
-        {
-            currentYSpeed = max(currentYSpeed - accelarationY, -speedPixPerSecond.y);
-        }
-
-        else if (y == 0)
-        {
-            if (currentYSpeed > 0)
-            {
-                currentYSpeed = max(currentYSpeed - accelarationY, 0.0f);
-            }
-            else if (currentYSpeed < 0)
-            {
-                currentYSpeed = min(currentYSpeed + accelarationY, 0.0f);
-            }
-        }
-
-        float dx = dt * currentXSpeed;
-        float dy = dt * currentYSpeed;
-
-        float actualX = clamp(this->getBounds().left + dx,
-                              0.0f,
-                              dimensions::activeGameDimentions.x - this->getBounds().width);
-
-        if (actualX == 0.0f || actualX == dimensions::activeGameDimentions.x - this->getBounds().width)
-        {
-            currentXSpeed = 0;
-        }
-        float actualY = clamp(this->getBounds().top + dy,
-                              static_cast<float>(dimensions::activeGameYOffset),
-                              dimensions::screenDimentions.y - this->getBounds().height);
-
-        if (actualY == static_cast<float>(dimensions::activeGameYOffset) || actualY == dimensions::screenDimentions.y - this->getBounds().height)
-        {
-            currentYSpeed = 0;
-        }
-        sprite.setPosition(actualX, actualY); // ALONB - try to do this with a move, more elegant.
-    }
+    void advance(float dt, int8_t x, int8_t y) override;
 };
 
 class CountDownNumberItem
@@ -359,7 +217,7 @@ public:
     {
         this->item = item;
     }
-    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {}
+    sf::Drawable *getDrawable() // ALONB make this common function that all inherit. {} mabe will also handle the blackout/blink?
     {
         return &item;
     }
@@ -370,4 +228,14 @@ public:
     }
 };
 
+class simpleObjectFactory
+{
+public:
+    static list<unique_ptr<sf::RectangleShape>> createNum1();
+    static list<unique_ptr<sf::RectangleShape>> createNum2();
+    static list<unique_ptr<sf::RectangleShape>> createNum3();
+};
+
 // ALONB - provide a colliding function that takes 2 base objects?
+
+// ALONB - make meduz decelerate when switching direction

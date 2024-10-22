@@ -10,6 +10,21 @@
 
 using namespace std;
 
+GeneralText::GeneralText(string displayString, float charSize, bool isBlink)
+{
+    this->isBlink = isBlink;
+    string filePath = getPathForAsset("RowsOfSunflowers", ".ttf");
+    if (!font.loadFromFile(filePath))
+    {
+        std::cerr << "Error loading font!" << std::endl;
+        assert(0); // ALONB - use exception?
+    }
+    text.setString(displayString);
+    text.setFont(font);
+    text.setCharacterSize(charSize);
+    text.setFillColor(sf::Color::Red);
+}
+
 RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride)
 {
     if (!texture.loadFromFile(filePath))
@@ -72,8 +87,6 @@ void ChangingSprite::advance(float dt, int8_t x, int8_t y)
         return;
     }
 
-    cout << "FADDDDE" << endl;
-
     float alpha = (remainingFadeTimeSec / fadingTimeSec) * 255;
     setAlpha(alpha);
     remainingFadeTimeSec -= dt;
@@ -123,7 +136,8 @@ Bubble::Bubble(sf::FloatRect playerBoundsRect) : ChangingSprite(getPathForAsset(
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
 
-Prize::Prize() : RegularSprite(getPathForAsset("prize", ".png"), 0.05)
+Prize::Prize() : ChangingSprite(getPathForAsset("prize", ".png"), 0.05, {0, 0}, true, 5, 10)
+// Prize::Prize() : ChangingSprite(getPathForAsset("prize", ".png"), 0.05, {0, 0})
 {
     // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
     setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
@@ -131,9 +145,21 @@ Prize::Prize() : RegularSprite(getPathForAsset("prize", ".png"), 0.05)
 
     yMid = getBounds().top;
     yDelta = 0.025;
-    timeBeforeFadingSec = 1;
-    fadeTimeInSec = 5;
-    fading = false;
+}
+
+void Prize::advance(float dt, int8_t x, int8_t y)
+{
+    // ChangingSprite::advance(dt);
+    yDelta += (yMid - getBounds().top) * dt * 0.003;
+    // // cout << yDelta << endl;
+
+    if ((getBounds().top < yMid) && (getBounds().top + yDelta >= yMid))
+    {
+        // Fix so that the boyancy movement does not wander off..
+        yDelta = 0.015;
+    }
+    sprite.move(0, yDelta);
+    ChangingSprite::advance(dt, 0, 0); // the sprite is already advanced so just fade.
 }
 
 Player::Player() : ChangingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
@@ -145,6 +171,78 @@ Player::Player() : ChangingSprite(getPathForAsset("player", ".png"), GAME_BOARD_
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
+
+void Player::advance(float dt, int8_t x, int8_t y)
+{
+    accelarationX = 4000 * dt;
+    accelarationY = 3000 * dt / 1.6;
+    if (x == 1)
+    {
+        currentXSpeed = min(currentXSpeed + accelarationX, speedPixPerSecond.x);
+    }
+
+    else if (x == -1)
+    {
+        currentXSpeed = max(currentXSpeed - accelarationX, -speedPixPerSecond.x);
+    }
+
+    else if (x == 0)
+    {
+        if (currentXSpeed > 0)
+        {
+            currentXSpeed = max(currentXSpeed - accelarationX, 0.0f);
+        }
+        else if (currentXSpeed < 0)
+        {
+            currentXSpeed = min(currentXSpeed + accelarationX, 0.0f);
+        }
+    }
+
+    if (y == 1)
+    {
+        currentYSpeed = min(currentYSpeed + accelarationY, speedPixPerSecond.y);
+    }
+
+    else if (y == -1)
+    {
+        currentYSpeed = max(currentYSpeed - accelarationY, -speedPixPerSecond.y);
+    }
+
+    else if (y == 0)
+    {
+        if (currentYSpeed > 0)
+        {
+            currentYSpeed = max(currentYSpeed - accelarationY, 0.0f);
+        }
+        else if (currentYSpeed < 0)
+        {
+            currentYSpeed = min(currentYSpeed + accelarationY, 0.0f);
+        }
+    }
+
+    float dx = dt * currentXSpeed;
+    float dy = dt * currentYSpeed;
+
+    float actualX = clamp(this->getBounds().left + dx,
+                          0.0f,
+                          dimensions::activeGameDimentions.x - this->getBounds().width);
+
+    if (actualX == 0.0f || actualX == dimensions::activeGameDimentions.x - this->getBounds().width)
+    {
+        // hitting the wall should completely stop the movement
+        currentXSpeed = 0;
+    }
+    float actualY = clamp(this->getBounds().top + dy,
+                          static_cast<float>(dimensions::activeGameYOffset),
+                          dimensions::screenDimentions.y - this->getBounds().height);
+
+    if (actualY == static_cast<float>(dimensions::activeGameYOffset) || actualY == dimensions::screenDimentions.y - this->getBounds().height)
+    {
+        // hitting the wall should completely stop the movement
+        currentYSpeed = 0;
+    }
+    sprite.setPosition(actualX, actualY);
+}
 
 // Factories:
 

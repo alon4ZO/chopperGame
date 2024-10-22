@@ -111,10 +111,12 @@ void Manager::Start()
 
                 if (prizeCountDownMs <= 0)
                 {
+                    cout << "Prize" << endl;
                     GameShapes->createNewPrize();
-                    prizeCountDownMs = getRandomNumber(
-                        GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
-                        GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
+                    // prizeCountDownMs = getRandomNumber(
+                    //     GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f - GAME_MANAGER_GENERAL_RANDOM_FACTOR),
+                    //     GAME_MANAGER_PRIZE_COUNTDOWN_TIME_MS * (1.0f + GAME_MANAGER_GENERAL_RANDOM_FACTOR));
+                    prizeCountDownMs = 30000;
                 }
 
                 GameShapes->cleanUpOldObjects();
