@@ -135,7 +135,7 @@ public:
     sf::FloatRect getBounds() { return sprite.getGlobalBounds(); }
     bool getIsBlink() { return false; }
     bool checkColision(sf::FloatRect rectangle) { return this->getBounds().intersects(rectangle); }
-    sf::Drawable *getDrawable() { return &sprite; }
+    sf::Drawable *getDrawable() { return &sprite; } // make a drawable object classes that is inherited by texts, simple object, and regular sprite
 
 protected:
     sf::Sprite sprite;
@@ -166,14 +166,16 @@ public:
 class ChangingSprite : public RegularSprite
 {
 private:
-    uint32_t timeUntilFadeStartSec;
-    uint32_t fadeSpeedAlphaPerSec;
+    float timeUntilFadeStartSec;
+    float fadingTimeSec;
+    float remainingFadeTimeSec;
+    int32_t shouldFade;
 
 protected:
     sf::Vector2f speedPixPerSecond;
 
 public:
-    ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec) : RegularSprite(filePath, scale), speedPixPerSecond({speedScreenPerSec.x * dimensions::activeGameDimentions.x, speedScreenPerSec.y * dimensions::activeGameDimentions.y}) {};
+    ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec, bool shouldFade = false, int32_t timeUntilFadeStartSec = 0, int32_t fadeSpeedAlphaPerSec = 0);
     virtual void advance(float dt, int8_t x = 1, int8_t y = 1);
 };
 
@@ -190,24 +192,16 @@ public:
     Shark(float scale, float horizontalSpeed);
 };
 
+class Bubble : public ChangingSprite
+{
+public:
+    Bubble(sf::FloatRect playerBoundsRect);
+};
+
 class ExtraLifeIcon : public ChangingSprite
 {
-    float fadeTimeInSec;
-    float fadeTimeConst;
-
 public:
     ExtraLifeIcon();
-    void advance(float dt, int8_t x = 1, int8_t y = 1) override
-    {
-        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
-
-        if (fadeTimeInSec > 0)
-        {
-            float alpha = (fadeTimeInSec / fadeTimeConst) * 255;
-            setAlpha(alpha);
-            fadeTimeInSec -= dt;
-        }
-    }
 };
 
 class Prize : public RegularSprite
@@ -270,12 +264,6 @@ public:
     {
         return canReleaseFlag;
     }
-};
-
-class Bubble : public ChangingSprite
-{
-public:
-    Bubble(sf::FloatRect playerBoundsRect);
 };
 
 class Player : public ChangingSprite
@@ -357,7 +345,7 @@ public:
         {
             currentYSpeed = 0;
         }
-        sprite.setPosition(actualX, actualY);
+        sprite.setPosition(actualX, actualY); // ALONB - try to do this with a move, more elegant.
     }
 };
 

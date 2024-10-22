@@ -49,11 +49,39 @@ lifeIcon::lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png")
                 (dimensions::activeGameYOffset - getBounds().height) / 2);
 }
 
+ChangingSprite::ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec, bool shouldFade, int32_t timeUntilFadeStartSec, int32_t fadeSpeedAlphaPerSec) : RegularSprite(filePath, scale),
+                                                                                                                                                                             speedPixPerSecond({speedScreenPerSec.x * dimensions::activeGameDimentions.x, speedScreenPerSec.y * dimensions::activeGameDimentions.y}),
+                                                                                                                                                                             timeUntilFadeStartSec(timeUntilFadeStartSec), fadingTimeSec(fadeSpeedAlphaPerSec),
+                                                                                                                                                                             remainingFadeTimeSec(fadeSpeedAlphaPerSec),
+                                                                                                                                                                             shouldFade(shouldFade) {};
+
 void ChangingSprite::advance(float dt, int8_t x, int8_t y)
 {
     sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
 
     // fade
+    if (!shouldFade)
+    {
+        return;
+    }
+
+    timeUntilFadeStartSec -= dt;
+
+    if (timeUntilFadeStartSec > 0)
+    {
+        return;
+    }
+
+    cout << "FADDDDE" << endl;
+
+    float alpha = (remainingFadeTimeSec / fadingTimeSec) * 255;
+    setAlpha(alpha);
+    remainingFadeTimeSec -= dt;
+
+    if (remainingFadeTimeSec < 0)
+    {
+        sprite.setPosition(-1000, -1000);
+    }
 }
 
 Meduz::Meduz(float scale, float verticleSpeed) : ChangingSprite(getPathForAsset("meduz", ".png", 2), scale, {0, verticleSpeed})
@@ -74,14 +102,14 @@ void Meduz::advance(float dt, int8_t x, int8_t y)
     ChangingSprite::advance(dt, x, y);
 }
 
-ExtraLifeIcon::ExtraLifeIcon() : ChangingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+ExtraLifeIcon::ExtraLifeIcon() : ChangingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC}, true, 0, 2)
 
 {
     setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y / 2));
 
-    fadeTimeConst = 2;
-    fadeTimeInSec = fadeTimeConst;
+    // fadeTimeConst = 2;
+    // fadeTimeInSec = fadeTimeConst;
 };
 
 Shark::Shark(float scale, float horizontalSpeed) : ChangingSprite(getPathForAsset("shark", ".png"), scale, {horizontalSpeed, 0})
@@ -90,7 +118,7 @@ Shark::Shark(float scale, float horizontalSpeed) : ChangingSprite(getPathForAsse
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
 
-Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(getPathForAsset("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
+Bubble::Bubble(sf::FloatRect playerBoundsRect) : ChangingSprite(getPathForAsset("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
 };
