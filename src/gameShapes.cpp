@@ -218,7 +218,7 @@ void GameShapes::createNewShark()
             sharks.push_back(move(newShark));
         }
         counter++;
-        assert(counter < OBJECTS_CREATE_OBJECT_MAX_RETRIES);
+        assert(counter < OBJECTS_CREATE_OBJECT_MAX_RETRIES); // ALONB - i got an assert!
     } while (collisionDuringCreation);
 }
 

@@ -10,16 +10,86 @@
 
 using namespace std;
 
-Meduz::Meduz(float scale, float verticleSpeed) : Obsticle(getPathForAsset("meduz", ".png", 2), scale, {0, verticleSpeed})
+RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride)
+{
+    if (!texture.loadFromFile(filePath))
+    {
+        std::cerr << "Error loading image!" << std::endl;
+        assert(0); // ALONB - use exception?
+    }
+    sf::Vector2f originalSize(texture.getSize());
+
+    // Calculate scale factors
+    float imageScale;
+
+    if (scaleYoverride == -1)
+    {
+        float desiredWidth = dimensions::screenDimentions.x * scaleX;
+        imageScale = desiredWidth / originalSize.x;
+    }
+    else
+    {
+        float desiredHeight = dimensions::screenDimentions.y * scaleYoverride;
+        imageScale = desiredHeight / originalSize.y;
+    }
+
+    setAlpha(OBJECTS_MAX_COLOR_VALUE);
+    sprite.setTexture(texture);
+    sprite.setScale(imageScale, imageScale);
+}
+
+ScoresIcon::ScoresIcon() : RegularSprite(getPathForAsset("score_sign", ".png"), 0.03)
+{
+    setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
+}
+
+lifeIcon::lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
+{
+    setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
+                (dimensions::activeGameYOffset - getBounds().height) / 2);
+}
+
+void ChangingSprite::advance(float dt, int8_t x, int8_t y)
+{
+    sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+
+    // fade
+}
+
+Meduz::Meduz(float scale, float verticleSpeed) : ChangingSprite(getPathForAsset("meduz", ".png", 2), scale, {0, verticleSpeed})
 {
     setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
-Shark::Shark(float scale, float horizontalSpeed) : Obsticle(getPathForAsset("shark", ".png"), scale, {horizontalSpeed, 0})
+
+void Meduz::advance(float dt, int8_t x, int8_t y)
+{
+    float dy = dt * speedPixPerSecond.y;
+
+    if ((this->getBounds().top + dy) < dimensions::activeGameYOffset)
+    {
+        speedPixPerSecond.y *= -1;
+    }
+
+    ChangingSprite::advance(dt, x, y);
+}
+
+ExtraLifeIcon::ExtraLifeIcon() : ChangingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
+
+{
+    setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
+                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y / 2));
+
+    fadeTimeConst = 2;
+    fadeTimeInSec = fadeTimeConst;
+};
+
+Shark::Shark(float scale, float horizontalSpeed) : ChangingSprite(getPathForAsset("shark", ".png"), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
                 dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
 };
+
 Bubble::Bubble(sf::FloatRect playerBoundsRect) : MovingSprite(getPathForAsset("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
     setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
@@ -38,7 +108,7 @@ Prize::Prize() : RegularSprite(getPathForAsset("prize", ".png"), 0.05)
     fading = false;
 }
 
-Player::Player() : MovingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player() : ChangingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
 {
     currentXSpeed = 0;
     currentYSpeed = 0;
@@ -46,16 +116,6 @@ Player::Player() : MovingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PL
     accelarationY = GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_FACTOR;
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
-};
-
-ExtraLifeIcon::ExtraLifeIcon() : MovingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC})
-
-{
-    setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
-                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y / 2));
-
-    fadeTimeConst = 2;
-    fadeTimeInSec = fadeTimeConst;
 };
 
 // Factories:

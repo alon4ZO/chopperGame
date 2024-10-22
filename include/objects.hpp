@@ -131,146 +131,82 @@ public:
 class RegularSprite
 {
 public:
-    RegularSprite(string filePath, float scaleX, float scaleYoverride = -1)
-    {
-        if (!texture.loadFromFile(filePath))
-        {
-            std::cerr << "Error loading image!" << std::endl;
-            assert(0); // ALONB - use exception?
-        }
-        sf::Vector2f originalSize(texture.getSize());
-
-        // Calculate scale factors
-        float imageScale;
-
-        if (scaleYoverride == -1)
-        {
-            float desiredWidth = dimensions::screenDimentions.x * scaleX;
-            imageScale = desiredWidth / originalSize.x;
-        }
-        else
-        {
-            float desiredHeight = dimensions::screenDimentions.y * scaleYoverride;
-            imageScale = desiredHeight / originalSize.y;
-        }
-
-        setAlpha(OBJECTS_MAX_COLOR_VALUE);
-        sprite.setTexture(texture);
-        sprite.setScale(imageScale, imageScale);
-    }
-
-    sf::FloatRect getBounds()
-    {
-        return sprite.getGlobalBounds();
-    }
-
-    bool checkColision(sf::FloatRect rectangle)
-    {
-        return this->getBounds().intersects(rectangle);
-    }
-
-    sf::Drawable *getDrawable() // ALONB - mayve if this has a drawable base, this is not needed!!! just put the object in tht pointer
-    {
-        return &sprite;
-    }
-
-    bool getIsBlink()
-    {
-        return false;
-    }
+    RegularSprite(string filePath, float scaleX, float scaleYoverride = -1);
+    sf::FloatRect getBounds() { return sprite.getGlobalBounds(); }
+    bool getIsBlink() { return false; }
+    bool checkColision(sf::FloatRect rectangle) { return this->getBounds().intersects(rectangle); }
+    sf::Drawable *getDrawable() { return &sprite; }
 
 protected:
     sf::Sprite sprite;
     sf::Texture texture;
 
-    void setLocation(float x, float y)
-    {
-        sprite.setPosition(x, y);
-    }
-
+    // ALONB move all  this alpha stuff to chainging sprite
+    void setLocation(float x, float y) { sprite.setPosition(x, y); }
+    uint8_t getAlpha() { return sprite.getColor().a; }
+    void fade(uint8_t units) { setAlpha(getAlpha() - units); }
     void setAlpha(uint8_t alpha)
     {
         sprite.setColor(sf::Color(OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, OBJECTS_MAX_COLOR_VALUE, static_cast<sf::Uint8>(alpha)));
-    }
-
-    uint8_t getAlpha()
-    {
-        return sprite.getColor().a;
-    }
-
-    void fade(uint8_t units)
-    {
-        setAlpha(getAlpha() - units);
     }
 };
 
 class lifeIcon : public RegularSprite
 {
 public:
-    lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
-    // lifeIcon(uint8_t id) : RegularSprite(ObjectFactory::getPathForAssets("player", ".png"), 0, 0.1)
-    {
-        setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
-                    (dimensions::activeGameYOffset - getBounds().height) / 2);
-    }
+    lifeIcon(uint8_t id);
 };
 
 class ScoresIcon : public RegularSprite
 {
 public:
-    ScoresIcon() : RegularSprite(getPathForAsset("score_sign", ".png"), 0.03)
-    {
-        setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
-    }
+    ScoresIcon();
 };
 
-class MovingSprite : public RegularSprite
+class ChangingSprite : public RegularSprite
 {
-protected: // should this be protected?
+private:
+    uint32_t timeUntilFadeStartSec;
+    uint32_t fadeSpeedAlphaPerSec;
+
+protected:
     sf::Vector2f speedPixPerSecond;
 
 public:
-    MovingSprite(string filePath, float scale, sf::Vector2f speed) : RegularSprite(filePath, scale), speedPixPerSecond({speed.x * dimensions::activeGameDimentions.x, speed.y * dimensions::activeGameDimentions.y}) {};
-    virtual void advance(float dt, int8_t x = 1, int8_t y = 1) = 0;
-    // IMPLEMENT THE DRAW HERE SO SCREEN CAN USE THIS ALONB
-
-public:
+    ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec) : RegularSprite(filePath, scale), speedPixPerSecond({speedScreenPerSec.x * dimensions::activeGameDimentions.x, speedScreenPerSec.y * dimensions::activeGameDimentions.y}) {};
+    virtual void advance(float dt, int8_t x = 1, int8_t y = 1);
 };
 
-class Obsticle : public MovingSprite
-{
-private:
-    sf::FloatRect collisionRectangle;
-
-public:
-    ~Obsticle() {}
-    Obsticle(string filePath, float scale, sf::Vector2f speed) : MovingSprite(filePath, scale, speed) {} // ALONB - optimize
-};
-
-class Meduz : public Obsticle
+class Meduz : public ChangingSprite
 {
 public:
     Meduz(float scale, float verticleSpeed);
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
-    {
-        float dy = dt * speedPixPerSecond.y * y;
-
-        if ((this->getBounds().top + dy) < dimensions::activeGameYOffset)
-        {
-            speedPixPerSecond.y *= -1;
-        }
-
-        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
-    }
+    void advance(float dt, int8_t x = 1, int8_t y = 1) override;
 };
 
-class Shark : public Obsticle
+class Shark : public ChangingSprite
 {
 public:
     Shark(float scale, float horizontalSpeed);
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
+};
+
+class ExtraLifeIcon : public ChangingSprite
+{
+    float fadeTimeInSec;
+    float fadeTimeConst;
+
+public:
+    ExtraLifeIcon();
+    void advance(float dt, int8_t x = 1, int8_t y = 1) override
     {
         sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
+
+        if (fadeTimeInSec > 0)
+        {
+            float alpha = (fadeTimeInSec / fadeTimeConst) * 255;
+            setAlpha(alpha);
+            fadeTimeInSec -= dt;
+        }
     }
 };
 
@@ -336,17 +272,13 @@ public:
     }
 };
 
-class Bubble : public MovingSprite
+class Bubble : public ChangingSprite
 {
 public:
     Bubble(sf::FloatRect playerBoundsRect);
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
-    {
-        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
-    } // add some sideways motion as well?
 };
 
-class Player : public MovingSprite
+class Player : public ChangingSprite
 {
 private:
     float currentXSpeed;
@@ -356,7 +288,7 @@ private:
 
 public:
     Player();
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
+    void advance(float dt, int8_t x = 1, int8_t y = 1) override
     {
         // cout << currentXSpeed << endl;
         // cout << "[x,y]" << (uint32_t)x << " " << (uint32_t)y << endl;
@@ -429,26 +361,6 @@ public:
     }
 };
 
-class ExtraLifeIcon : public MovingSprite
-{
-    float fadeTimeInSec;
-    float fadeTimeConst;
-
-public:
-    ExtraLifeIcon();
-    void advance(float dt, int8_t x = 1, int8_t y = 1)
-    {
-        sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
-
-        if (fadeTimeInSec > 0)
-        {
-            float alpha = (fadeTimeInSec / fadeTimeConst) * 255;
-            setAlpha(alpha);
-            fadeTimeInSec -= dt;
-        }
-    }
-};
-
 class CountDownNumberItem
 {
 private:
@@ -469,3 +381,5 @@ public:
         return false;
     }
 };
+
+// ALONB - provide a colliding function that takes 2 base objects?
