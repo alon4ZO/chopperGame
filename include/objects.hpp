@@ -34,7 +34,7 @@ public:
 class ScoreText : public GeneralText
 {
 public:
-    ScoreText();
+    ScoreText(float xPos);
     void updateText(string str) { text.setString(str); }
 };
 

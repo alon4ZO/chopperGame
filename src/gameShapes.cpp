@@ -86,8 +86,8 @@ void GameShapes::setActiveGame()
     clearGameBoard();
     isCollision = false;
     player = make_unique<Player>();
-    score = make_unique<ScoreText>();
     scoreSign = make_unique<ScoresIcon>();
+    score = make_unique<ScoreText>(scoreSign->getBounds().left + scoreSign->getBounds().width * SCORE_SIGN_TO_SCORE_SPACIG_RATIO);
 };
 
 vector<sf::Drawable *> &GameShapes::updateAndGetItemsToDraw() // ALONB this could use double buffering to get the mutex out of the screen

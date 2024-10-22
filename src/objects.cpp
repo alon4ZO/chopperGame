@@ -13,7 +13,7 @@ using namespace std;
 GeneralText::GeneralText(string displayString, float charSize, bool isBlink)
 {
     this->isBlink = isBlink;
-    string filePath = getPathForAsset("RowsOfSunflowers", ".ttf");
+    string filePath = getPathForAsset(ASSETS_FONT_NAME, ASSETS_FONT_POSTFIX);
     if (!font.loadFromFile(filePath))
     {
         std::cerr << "Error loading font!" << std::endl;
@@ -25,9 +25,10 @@ GeneralText::GeneralText(string displayString, float charSize, bool isBlink)
     text.setFillColor(sf::Color::Red);
 }
 
-ScoreText::ScoreText() : GeneralText("", dimensions::activeGameYOffset / 2)
+ScoreText::ScoreText(float xPos) : GeneralText("", dimensions::activeGameYOffset * SCORE_TEXT_FONT_SIZE_RATIO)
 {
-    setPosition(dimensions::screenDimentions.x * 0.9, dimensions::activeGameYOffset * 0.2); // ALONB - CHANGE the positioning to be relative?
+    setPosition(xPos, dimensions::activeGameYOffset * SCORE_TEXT_HEIGHT);
+    // SCORE_TEXT_HEIGHT has to be adjusted manually with the current font that is used.
 }
 
 GameOverText::GameOverText() : GeneralText("Game Over", dimensions::screenDimentions.y / 4)
@@ -89,9 +90,9 @@ RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride
     sprite.setScale(imageScale, imageScale);
 }
 
-ScoresIcon::ScoresIcon() : RegularSprite(getPathForAsset("score_sign", ".png"), 0.03)
+ScoresIcon::ScoresIcon() : RegularSprite(getPathForAsset(ASSETS_SCORE_SIGN_FILENAME, ASSETS_PNG_POSTFIX), OBJECTS_SCORE_SIGN_SCALE)
 {
-    setLocation(dimensions::activeGameDimentions.x / 2, (dimensions::activeGameYOffset * 1.1 - getBounds().height) / 2);
+    setLocation(dimensions::activeGameDimentions.x * OBJECTS_SCORE_X_POS_FACTOR, (dimensions::activeGameYOffset - getBounds().height) / 2);
 }
 
 lifeIcon::lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
