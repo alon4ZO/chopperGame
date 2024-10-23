@@ -225,7 +225,7 @@ void GameShapes::createNewShark()
 void GameShapes::createNewMeduz()
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    unique_ptr<Meduz> newMeduz = make_unique<Meduz>(OBJECTS_MEDUZA_SCALE_X, OBJECTS_MEDUZA_SPEED_Y);
+    unique_ptr<Meduz> newMeduz = make_unique<Meduz>(OBJECTS_MEDUZA_SCALE_X, OBJECTS_MEDUZA_SPEED_Y); // ALONB - put these inside objects?
     meduzes.push_back(move(newMeduz));
 }
 
@@ -399,11 +399,11 @@ void GameShapes::gameOver(uint32_t score, uint32_t highScore)
 
     clearGameBoard();
     unique_ptr<GameOverText> gameOverText = make_unique<GameOverText>();
-    unique_ptr<ScoresText> ScoreCountText = make_unique<ScoresText>(gameOverText->getBounds().height * 2, score, highScore); // ALONB - this 2 should be a define. after selecting text.
-    unique_ptr<pressEnterToRestart> pressEnterText = make_unique<pressEnterToRestart>();
+    unique_ptr<ScoresReportText> scoresReportText = make_unique<ScoresReportText>(gameOverText->getBounds().height * SCORE_TEXT_Y_OFFSET_FACTOR, score, highScore); // Need to manually tune according to font
+    unique_ptr<PressEnterText> pressEnterText = make_unique<PressEnterText>();
 
     gameOverTexts.push_back(move(gameOverText));
-    gameOverTexts.push_back(move(ScoreCountText));
+    gameOverTexts.push_back(move(scoresReportText));
     gameOverTexts.push_back(move(pressEnterText));
 }
 

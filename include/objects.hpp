@@ -44,19 +44,19 @@ public:
     GameOverText();
 };
 
-class ScoresText : public GeneralText
+class ScoresReportText : public GeneralText
 {
 private:
     string synthasizeText(uint32_t currentScore, uint32_t highScore);
 
 public:
-    ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore);
+    ScoresReportText(float yPosition, uint32_t currentScore, uint32_t highScore);
 };
 
-class pressEnterToRestart : public GeneralText
+class PressEnterText : public GeneralText
 {
 public:
-    pressEnterToRestart();
+    PressEnterText();
 };
 
 // sprites

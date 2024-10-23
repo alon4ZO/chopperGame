@@ -25,18 +25,18 @@ GeneralText::GeneralText(string displayString, float charSize, bool isBlink)
     text.setFillColor(sf::Color::Red);
 }
 
+// some text features have to be adjusted manually with the current font that is used due inconsistant placing.
 ScoreText::ScoreText(float xPos) : GeneralText("", dimensions::activeGameYOffset * SCORE_TEXT_FONT_SIZE_RATIO)
 {
     setPosition(xPos, dimensions::activeGameYOffset * SCORE_TEXT_HEIGHT);
-    // SCORE_TEXT_HEIGHT has to be adjusted manually with the current font that is used.
 }
 
 GameOverText::GameOverText() : GeneralText("Game Over", dimensions::screenDimentions.y / 4)
 {
-    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, (0));
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, (0)); // Top center
 }
 
-string ScoresText::synthasizeText(uint32_t currentScore, uint32_t highScore)
+string ScoresReportText::synthasizeText(uint32_t currentScore, uint32_t highScore)
 {
     if (currentScore < highScore)
     {
@@ -49,15 +49,14 @@ string ScoresText::synthasizeText(uint32_t currentScore, uint32_t highScore)
     }
 }
 
-ScoresText::ScoresText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y / 6)
+ScoresReportText::ScoresReportText(float yPosition, uint32_t currentScore, uint32_t highScore) : GeneralText(synthasizeText(currentScore, highScore), dimensions::screenDimentions.y * SCORES_REPORT_TEXT_SIZE_RATIO)
 {
-    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition);
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, yPosition); // x center, under Game over text.
 }
 
-pressEnterToRestart::pressEnterToRestart() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y / 4, true) // ALONB - change name: add Text to pressEnterToRestart
+PressEnterText::PressEnterText() : GeneralText("Press Enter To Play", dimensions::screenDimentions.y * PRESS_ENTER_TEXT_FONT_SIZE_RATIO, true)
 {
-    // setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - getBounds().height);
-    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * 1.5);
+    setPosition((dimensions::screenDimentions.x - getBounds().width) / 2, dimensions::screenDimentions.y - text.getCharacterSize() * PRESS_ENTER_TEXT_Y_OFFSET_RATIO);
 }
 
 // sprites:
@@ -85,7 +84,6 @@ RegularSprite::RegularSprite(string filePath, float scaleX, float scaleYoverride
         imageScale = desiredHeight / originalSize.y;
     }
 
-    // setAlpha(OBJECTS_MAX_COLOR_VALUE);
     sprite.setTexture(texture);
     sprite.setScale(imageScale, imageScale);
 }
@@ -95,19 +93,15 @@ ScoresIcon::ScoresIcon() : RegularSprite(getPathForAsset(ASSETS_SCORE_SIGN_FILEN
     setLocation(dimensions::activeGameDimentions.x * OBJECTS_SCORE_X_POS_FACTOR, (dimensions::activeGameYOffset - getBounds().height) / 2);
 }
 
-lifeIcon::lifeIcon(uint8_t id) : RegularSprite(getPathForAsset("player", ".png"), 0, GAME_SCREEN_WALL_WIDTH_RATIO * 0.3)
+lifeIcon::lifeIcon(uint8_t id) : RegularSprite(getPathForAsset(ASSETS_PLAYER_FILENAME, ASSETS_PNG_POSTFIX), 0, OBJECTS_LIFE_ICON_Y_RATIO)
 {
-    setLocation(dimensions::screenDimentions.x * 0.03 + (getBounds().width + dimensions::screenDimentions.x * 0.03) * id,
+    setLocation(dimensions::screenDimentions.x * OBJECTS_LIFE_X_SPACING_RATIO + (getBounds().width + dimensions::screenDimentions.x * OBJECTS_LIFE_X_SPACING_RATIO) * id,
                 (dimensions::activeGameYOffset - getBounds().height) / 2);
 }
 
-ChangingSprite::ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec, bool shouldFade, int32_t timeUntilFadeStartSec, int32_t fadeSpeedAlphaPerSec) : RegularSprite(filePath, scale),
-                                                                                                                                                                             speedPixPerSecond({speedScreenPerSec.x * dimensions::activeGameDimentions.x, speedScreenPerSec.y * dimensions::activeGameDimentions.y}),
-                                                                                                                                                                             timeUntilFadeStartSec(timeUntilFadeStartSec), fadingTimeSec(fadeSpeedAlphaPerSec),
-                                                                                                                                                                             remainingFadeTimeSec(fadeSpeedAlphaPerSec),
-                                                                                                                                                                             shouldFade(shouldFade) {};
+ChangingSprite::ChangingSprite(string filePath, float scale, sf::Vector2f speedScreenPerSec, bool shouldFade, int32_t timeUntilFadeStartSec, int32_t fadeSpeedAlphaPerSec) : RegularSprite(filePath, scale), speedPixPerSecond({speedScreenPerSec.x * dimensions::activeGameDimentions.x, speedScreenPerSec.y * dimensions::activeGameDimentions.y}), timeUntilFadeStartSec(timeUntilFadeStartSec), fadingTimeSec(fadeSpeedAlphaPerSec), remainingFadeTimeSec(fadeSpeedAlphaPerSec), shouldFade(shouldFade) {};
 
-void ChangingSprite::advance(float dt, int8_t x, int8_t y)
+void ChangingSprite::advance(float dt, int8_t x, int8_t y) // ALONB - change the X, Y to LEFT,RIGHT,UP,DOWN enums?
 {
     sprite.move(dt * speedPixPerSecond.x * x, dt * speedPixPerSecond.y * y);
 
@@ -117,26 +111,25 @@ void ChangingSprite::advance(float dt, int8_t x, int8_t y)
         return;
     }
 
-    timeUntilFadeStartSec -= dt;
-
     if (timeUntilFadeStartSec > 0)
     {
+        timeUntilFadeStartSec -= dt;
         return;
     }
 
-    float alpha = (remainingFadeTimeSec / fadingTimeSec) * 255;
+    float alpha = (remainingFadeTimeSec / fadingTimeSec) * OBJECTS_MAX_COLOR_VALUE;
     setAlpha(alpha);
     remainingFadeTimeSec -= dt;
 
     if (remainingFadeTimeSec < 0)
     {
-        sprite.setPosition(-1000, -1000);
+        sprite.setPosition(OBJECTS_INVALID_POSITION_COORDINATE, OBJECTS_INVALID_POSITION_COORDINATE);
     }
 }
 
-Meduz::Meduz(float scale, float verticleSpeed) : ChangingSprite(getPathForAsset("meduz", ".png", 2), scale, {0, verticleSpeed})
+Meduz::Meduz(float scale, float verticleSpeed) : ChangingSprite(getPathForAsset(ASSETS_MEDUZ_FILENAME, ASSETS_PNG_POSTFIX, ASSETS_POSSIBLE_NUM_OF_MEDUZ_ART), scale, {0, verticleSpeed})
 {
-    setLocation(getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.x - getBounds().width),
+    setLocation(getRandomNumber(0.0f, dimensions::activeGameDimentions.x - getBounds().width),
                 dimensions::screenDimentions.y);
 };
 
@@ -152,31 +145,27 @@ void Meduz::advance(float dt, int8_t x, int8_t y)
     ChangingSprite::advance(dt, x, y);
 }
 
-ExtraLifeIcon::ExtraLifeIcon() : ChangingSprite(getPathForAsset("extraLife", ".png"), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC}, true, 0, 2)
+ExtraLifeIcon::ExtraLifeIcon() : ChangingSprite(getPathForAsset(ASSETS_EXTRA_LIFE_FILENAME, ASSETS_PNG_POSTFIX), GAME_BOARD_EXTRA_LIFE_ICON_X_RATIO, {0, GAME_BOARD_EXTRA_LIFE_ICON_SPEED_Y_SCREENS_PER_SEC}, true, 0, GAME_BOARD_EXTRA_LIFE_FADE_TIME)
 
 {
-    setLocation(dimensions::activeGameDimentions.x - getBounds().width * 2, // ALONB - this 2 is a def.
-                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y / 2));
-
-    // fadeTimeConst = 2;
-    // fadeTimeInSec = fadeTimeConst;
+    setLocation(dimensions::activeGameDimentions.x - getBounds().width * OBJECTS_EXTRA_LIFE_X_OFFSET,
+                dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y * OBJECTS_EXTRA_LIFE_Y_OFFSET));
 };
 
-Shark::Shark(float scale, float horizontalSpeed) : ChangingSprite(getPathForAsset("shark", ".png"), scale, {horizontalSpeed, 0})
+Shark::Shark(float scale, float horizontalSpeed) : ChangingSprite(getPathForAsset(ASSETS_SHARK_FILENAME, ASSETS_PNG_POSTFIX), scale, {horizontalSpeed, 0})
 {
     setLocation(dimensions::activeGameDimentions.x,
-                dimensions::activeGameYOffset + (getRandomNumber(static_cast<float>(0), dimensions::activeGameDimentions.y - getBounds().height)));
+                dimensions::activeGameYOffset + (getRandomNumber(0.0f, dimensions::activeGameDimentions.y - getBounds().height)));
 };
 
-Bubble::Bubble(sf::FloatRect playerBoundsRect) : ChangingSprite(getPathForAsset("bubble", ".png"), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
+Bubble::Bubble(sf::FloatRect playerBoundsRect) : ChangingSprite(getPathForAsset(ASSETS_BUBBLE_FILENAME, ASSETS_PNG_POSTFIX), GAME_BOARD_BUBBLE_X_SCALE, {0, GAME_BOARD_BUBBLE_VERTICAL_SPEED})
 {
-    setLocation(playerBoundsRect.left + playerBoundsRect.width * 0.2f, playerBoundsRect.top + playerBoundsRect.height * 0.5);
+    setLocation(playerBoundsRect.left + playerBoundsRect.width * GAME_BOARD_BUBBLE_X_OFFSET_FACTOR, playerBoundsRect.top + playerBoundsRect.height * GAME_BOARD_BUBBLE_Y_OFFSET_FACTOR);
 };
 
-Prize::Prize() : ChangingSprite(getPathForAsset("prize", ".png"), 0.05, {0, 0}, true, 5, 10)
-// Prize::Prize() : ChangingSprite(getPathForAsset("prize", ".png"), 0.05, {0, 0})
+Prize::Prize() : ChangingSprite(getPathForAsset(ASSETS_PRIZE_FILENAME, ASSETS_PNG_POSTFIX), OBJECTS_PRIZE_SCALE_X, {0, 0}, true, OBJECTS_PRIZE_SOLID_TIME_S, OBJECTS_PRIZE_FADE_TIME_S)
 {
-    // make sure the location supports the boyancy. ALONB - also, spelling boyancy?
+    // make sure the location supports the buoyancy.
     setLocation(getRandomNumber(0u, static_cast<uint32_t>(dimensions::activeGameDimentions.x - getBounds().width)),
                 getRandomNumber(dimensions::activeGameYOffset, static_cast<uint32_t>(dimensions::activeGameDimentions.y - getBounds().height)));
 
@@ -187,7 +176,7 @@ Prize::Prize() : ChangingSprite(getPathForAsset("prize", ".png"), 0.05, {0, 0}, 
 void Prize::advance(float dt, int8_t x, int8_t y)
 {
     // ChangingSprite::advance(dt);
-    yDelta += (yMid - getBounds().top) * dt * 0.003;
+    yDelta += (yMid - getBounds().top) * dt * OBJECTS_PRIZE_YDELTA_CHANGE_FACTOR;
     // // cout << yDelta << endl;
 
     if ((getBounds().top < yMid) && (getBounds().top + yDelta >= yMid))
