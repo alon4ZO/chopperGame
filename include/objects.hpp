@@ -152,8 +152,6 @@ class Player : public ChangingSprite
 private:
     float currentXSpeed;
     float currentYSpeed;
-    float accelarationX;
-    float accelarationY;
 
 public:
     Player();

@@ -170,38 +170,46 @@ Prize::Prize() : ChangingSprite(getPathForAsset(ASSETS_PRIZE_FILENAME, ASSETS_PN
                 getRandomNumber(dimensions::activeGameYOffset, static_cast<uint32_t>(dimensions::activeGameDimentions.y - getBounds().height)));
 
     yMid = getBounds().top;
-    yDelta = 0.025;
+    yDelta = OBJECTS_PRIZE_YDELTA_INITIAL_SPEED;
 }
 
 void Prize::advance(float dt, int8_t x, int8_t y)
 {
-    // ChangingSprite::advance(dt);
     yDelta += (yMid - getBounds().top) * dt * OBJECTS_PRIZE_YDELTA_CHANGE_FACTOR;
-    // // cout << yDelta << endl;
 
     if ((getBounds().top < yMid) && (getBounds().top + yDelta >= yMid))
     {
-        // Fix so that the boyancy movement does not wander off..
-        yDelta = 0.015;
+        // reset, so buoyancy does not wander off..
+        sprite.move(0, yMid - getBounds().top);
+        yDelta = OBJECTS_PRIZE_YDELTA_INITIAL_SPEED;
     }
-    sprite.move(0, yDelta);
+    else
+    {
+        sprite.move(0, yDelta);
+    }
+
     ChangingSprite::advance(dt, 0, 0); // the sprite is already advanced so just fade.
 }
 
-Player::Player() : ChangingSprite(getPathForAsset("player", ".png"), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC}) // ALONB - change these pixels per sec
+Player::Player() : ChangingSprite(getPathForAsset(ASSETS_PLAYER_FILENAME, ASSETS_PNG_POSTFIX), GAME_BOARD_PLAYER_X_SIZE_RATIO, {GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC, GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC})
 {
     currentXSpeed = 0;
     currentYSpeed = 0;
-    accelarationX = GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_FACTOR;
-    accelarationY = GAME_BOARD_PLAYER_SPEED_Y_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_FACTOR;
     setLocation(dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_X_OFFSET_RATIO,
                 dimensions::activeGameYOffset + (dimensions::activeGameDimentions.y - getBounds().height) / 2);
 };
 
 void Player::advance(float dt, int8_t x, int8_t y)
 {
-    accelarationX = 4000 * dt;
-    accelarationY = 3000 * dt / 1.6;
+
+    // cout < < < < endl;
+    // cout << dimensions::activeGameDimentions.y << endl;
+    // float accelarationX = 4000 * dt;
+    // float accelarationY = 3000 * dt / 1.6;
+
+    float accelarationX = dimensions::activeGameDimentions.x * GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_X_FACTOR * dt;
+    float accelarationY = dimensions::activeGameDimentions.y * GAME_BOARD_PLAYER_SPEED_X_SCREENS_PER_SEC * GAME_BOARD_PLAYER_ACCELERATION_Y_FACTOR * dt;
+
     if (x == 1)
     {
         currentXSpeed = min(currentXSpeed + accelarationX, speedPixPerSecond.x);
@@ -256,7 +264,7 @@ void Player::advance(float dt, int8_t x, int8_t y)
     if (actualX == 0.0f || actualX == dimensions::activeGameDimentions.x - this->getBounds().width)
     {
         // hitting the wall should completely stop the movement
-        currentXSpeed = 0;
+        currentXSpeed = 0; // ALONB do this for Y as well! Top and bottom.
     }
     float actualY = clamp(this->getBounds().top + dy,
                           static_cast<float>(dimensions::activeGameYOffset),
